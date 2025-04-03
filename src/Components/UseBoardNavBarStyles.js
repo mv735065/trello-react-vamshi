@@ -15,6 +15,17 @@ const useBoardNavBarStyles = () => ({
       fontSize: "1.5rem",
       color: "black",
     },
+    box:{
+      flexGrow: 1,
+      overflowX: "auto",
+      padding: 2,
+      whiteSpace: "nowrap",
+    },
+    mainBox:{
+      display: "flex",
+      flexDirection: "column",
+      height: "90vh",
+    }
   });
 
   export default useBoardNavBarStyles;

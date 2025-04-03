@@ -32,9 +32,7 @@ const BoardList = () => {
         ]);
 
         setBoard(boardRes.data);
-        let lists = listsRes.data;
-        lists = lists.filter((ele) => !ele.closed);
-        handleLists(lists);
+        handleLists(listsRes.data);
         setAllCardsInBoard(cardsRes.data);
       } catch (err) {
         console.log("Unable to fetch lists of board", err.message);
@@ -100,11 +98,7 @@ const BoardList = () => {
     <Typography variant="h5">Loading...</Typography>
   ) : (
     <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        height: "90vh",
-      }}
+      sx={styles.mainBox}
     >
       {/* Navbar (Fixed at the top) */}
       <Box className="boardNavBar" sx={styles.boardNavBar}>
@@ -114,12 +108,7 @@ const BoardList = () => {
       </Box>
 
       <Box
-        sx={{
-          flexGrow: 1,
-          overflowX: "auto",
-          padding: 2,
-          whiteSpace: "nowrap",
-        }}
+        sx={styles.box}
       >
         <Grid container spacing={2} wrap="nowrap" sx={{ height: "auto" }}>
           {listsOfBoard?.lists?.map((ele) => {

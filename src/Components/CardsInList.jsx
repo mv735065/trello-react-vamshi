@@ -9,23 +9,37 @@ import {
   List,
   ListItem,
   Button,
-  TextField,
+  TextField,Modal,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import CardInListStyles from "./CardInListStyles";
+import StylesCardInList from "./StylesCardInList";
+
+// const modalStyles 
 
 const CardsInList = ({ list, cards, handleArchiveList }) => {
   const [cardsInList, setCardsInList] = useState(cards || []);
   const [isAddingCard, setIsAddingCard] = useState(false);
   const newCardTextRef = useRef();
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [selectedCard, setSelectedCard] = useState(null);
+  const handleCardClick = (card) => {
+    setSelectedCard(card);
+    setIsPopupOpen(true);
+  };
 
-  let styles = CardInListStyles();
+  // Function to close the popup
+  const handleClosePopup = () => {
+    setIsPopupOpen(false);
+    setSelectedCard(null);
+  };
+
+  let styles = StylesCardInList();
 
   console.log("Rendered CardsInList");
 
   // Handle submitting a new card
-  const handleCardSubmit = async () => {
+  const handleAddNewCard = async () => {
     const cardName = newCardTextRef.current?.value.trim();
     if (!cardName) return;
 
@@ -46,7 +60,30 @@ const CardsInList = ({ list, cards, handleArchiveList }) => {
     }
   };
 
+ async function handleDeleteCard(){
+     let id=selectedCard.id;
+      try{
+         let response=await axios.delete(`https://api.trello.com/1/cards/${id}`,
+          {
+            params: { ...API_CREDENTIALS },
+          }
+         )
+         setIsPopupOpen(false);
+         setSelectedCard(null);
+         setCardsInList((prev)=>{
+          return prev.filter((ele)=>ele.id!=id)
+         });
+         
+
+      }
+      catch(err){
+        console.log('unable to deleted the card ',err.message);
+        
+      }
+  }
+
   return (
+    <>
     <Card sx={styles.card}>
       {/* List Header */}
       <Box sx={styles.box}>
@@ -61,7 +98,7 @@ const CardsInList = ({ list, cards, handleArchiveList }) => {
         <List sx={{ padding: 0 }}>
           {cardsInList.length > 0 ? (
             cardsInList.map((card) => (
-              <ListItem key={card.id} sx={styles.listItem}>
+              <ListItem key={card.id} sx={styles.listItem} onClick={() => handleCardClick(card)}>
                 {card.name}
               </ListItem>
             ))
@@ -85,7 +122,7 @@ const CardsInList = ({ list, cards, handleArchiveList }) => {
               />
               <Button
                 sx={{ color: "white", marginLeft: 1 }}
-                onClick={handleCardSubmit}
+                onClick={handleAddNewCard}
               >
                 Add
               </Button>
@@ -100,8 +137,7 @@ const CardsInList = ({ list, cards, handleArchiveList }) => {
             <Button
               startIcon={<AddIcon />}
               sx={{
-                ...styles.button,
-                "&:hover": { bgcolor: "#1a1a1a" },
+                ...styles.addButton,
               }}
               onClick={() => setIsAddingCard(true)}
             >
@@ -113,16 +149,48 @@ const CardsInList = ({ list, cards, handleArchiveList }) => {
       {/* Delete Button */}
       <Button
         sx={{
-          ...styles.button,
-          bgcolor: "red",
-          "&:hover": { bgcolor: "#ff4d4d" },
-          marginTop: 2,
+          ...styles.deleteButton,
         }}
         onClick={() => handleArchiveList(list.id)}
       >
         Archive List
       </Button>
     </Card>
+    <Modal open={isPopupOpen} onClose={handleClosePopup}>
+        <Box sx={styles.modalStyles}>
+          {/* Close Button */}
+          <Button
+            sx={styles.Xmark}
+            onClick={handleClosePopup}
+          >
+            X
+          </Button>
+
+          <Typography variant="h5" gutterBottom  sx={{color:'white'}}>
+            {selectedCard?.name}
+          </Typography>
+
+          {/* Buttons for Delete and Checklist */}
+          <Box>
+            <Button
+              variant="contained"
+              color="error"
+              sx={{ marginRight: 2 }}
+              onClick={handleDeleteCard}
+            >
+              Delete
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => console.log("Checklist clicked", selectedCard?.id)}
+            >
+              Checklist
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+    </>
   );
 };
 
