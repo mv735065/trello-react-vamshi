@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef,useReducer } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import API_CREDENTIALS from "../Credintials";
 import { Typography, Box, Grid, Button, TextField } from "@mui/material";
@@ -9,85 +9,94 @@ import useBoardNavBarStyles from "../Components/UseBoardNavBarStyles";
 import fetchSingleBoard from "../Components/fetchSingleBoard";
 import fetchlistsOfSingleBoard from "../Components/fetchlistsOfSingleBoard";
 import fetchAllCardsInBoard from "../Components/fetchAllCardsInBoard";
+import listsReducer,{initialState} from "../Components/BoardListsReducer";
 
 const BoardList = () => {
   const { id } = useParams();
   const [board, setBoard] = useState({});
-  const [listsOfBoard, setListsOfBoard] = useState([]);
+  const [listsOfBoard, dispatch] = useReducer(listsReducer,initialState);
   const [allCardsInBoard, setAllCardsInBoard] = useState([]);
-  let [isLoading, setIsLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const listNameRef = useRef();
 
   const styles = useBoardNavBarStyles();
-
+  
   useEffect(() => {
     const fetch = async () => {
-      setIsLoading(true);
+      dispatch({ type: "SET_LOADING", loading: true });
       try {
-        const board = await fetchSingleBoard(id);
-        const response1 = await fetchlistsOfSingleBoard(id);
-        const response2 = await fetchAllCardsInBoard(id);
+        const [boardRes, listsRes, cardsRes] = await Promise.all([
+          fetchSingleBoard(id),
+          fetchlistsOfSingleBoard(id),
+          fetchAllCardsInBoard(id),
+        ]);
 
-        setBoard(board.data);
-        let lists = response1.data;
-        setListsOfBoard(lists.filter((ele) => !ele.closed));
-        setAllCardsInBoard(response2.data);
+        setBoard(boardRes.data);
+        let lists = listsRes.data;
+        lists = lists.filter((ele) => !ele.closed);
+        handleLists(lists);
+        setAllCardsInBoard(cardsRes.data);
       } catch (err) {
         console.log("Unable to fetch lists of board", err.message);
       } finally {
-        setIsLoading(false);
+        dispatch({ type: "SET_LOADING", loading: false });
       }
     };
 
     fetch();
   }, []);
 
-  const handleArchiveList = async (id) => {
+ async function handleLists(lists) {
+   try{
+      dispatch({
+      type: "getAllLists",
+      list: lists,
+    });
+   }
+   catch(err){
+    console.error("Error getting all lists:", err.message);
+    
+   }
+  }
+
+  async function handleArchiveList(id) {
     try {
-      let responsde = await axios.put(
-        `https://api.trello.com/1/lists/${id}/closed`,
-        null,
-        {
-          params: { value: true, ...API_CREDENTIALS },
-        }
-      );
-      setListsOfBoard((prev) => {
-        return prev.filter((ele) => {
-          return ele.id != id;
-        });
+      await axios.put(`https://api.trello.com/1/lists/${id}/closed`, null, {
+        params: { value: true, ...API_CREDENTIALS },
       });
-      console.log("List deleted successfully");
+  
+      dispatch({ type: "archive", id });
     } catch (error) {
       console.error("Error deleting list:", error.message);
     }
-  };
-
+  }
+  
   async function handleAddNewList(event) {
     event.preventDefault();
     const listName = listNameRef.current.value.trim();
     if (!listName) return;
-
+  
     try {
-      const response = await axios.post(
-        "https://api.trello.com/1/lists",
-        null,
-        {
-          params: { name: listName, idBoard: id, ...API_CREDENTIALS },
-        }
-      );
-
-      setListsOfBoard((prev) => [...prev, response.data]);
+      const response = await axios.post("https://api.trello.com/1/lists", null, {
+        params: { name: listName, idBoard: id, ...API_CREDENTIALS },
+      });
+  
+      dispatch({
+        type: "addNewList",
+        data: response.data
+      });
+  
       setShowForm(false);
       listNameRef.current.value = "";
     } catch (error) {
       console.error("Error creating board:", error);
     }
   }
+  
 
-  let cardsForEachList = getcardsForEachList(allCardsInBoard);
+  let cardsForEachList = getcardsForEachList(allCardsInBoard || []);
 
-  return isLoading ? (
+  return listsOfBoard.loading ? (
     <Typography variant="h5">Loading...</Typography>
   ) : (
     <Box
@@ -113,7 +122,7 @@ const BoardList = () => {
         }}
       >
         <Grid container spacing={2} wrap="nowrap" sx={{ height: "auto" }}>
-          {listsOfBoard.map((ele) => {
+          {listsOfBoard?.lists?.map((ele) => {
             return (
               <Grid
                 key={ele.id}
