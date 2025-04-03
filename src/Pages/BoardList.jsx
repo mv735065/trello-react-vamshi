@@ -1,75 +1,37 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import API_CREDENTIALS from "../Credintials";
-import { Typography, Box, Grid, typographyClasses } from "@mui/material";
+import { Typography, Box, Grid, Button, TextField } from "@mui/material";
 import CardsInList from "../Components/CardsInList";
-
-const useBoardNavBarStyles = () => ({
-  boardNavBar: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "16px",
-    backgroundColor: "#f5f5f5",
-    borderBottom: "2px solid #e0e0e0",
-    width: "50vw", // Set navbar width to 50% of the viewport
-    borderTopRightRadius: "50%", // Right side top rounded with 50% radius
-    borderBottomRightRadius: "50%",
-  },
-  title: {
-    fontWeight: 600,
-    fontSize: "1.5rem",
-    color: "black",
-  },
-});
+import AddNewListForm from "../Components/AddNewListForm";
+import useBoardNavBarStyles from "../Components/UseBoardNavBarStyles";
+import fetchSingleBoard from "../Components/fetchSingleBoard";
+import fetchlistsOfSingleBoard from "../Components/fetchlistsOfSingleBoard";
+import fetchAllCardsInBoard from "../Components/fetchAllCardsInBoard";
 
 const BoardList = () => {
   const { id } = useParams();
   const [board, setBoard] = useState({});
   const [listsOfBoard, setListsOfBoard] = useState([]);
   const [allCardsInBoard, setAllCardsInBoard] = useState([]);
-  const styles = useBoardNavBarStyles();
   let [isLoading, setIsLoading] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const listNameRef = useRef();
+
+  const styles = useBoardNavBarStyles();
 
   useEffect(() => {
     const fetch = async () => {
       setIsLoading(true);
       try {
-        const board = await axios.get(`https://api.trello.com/1/boards/${id}`, {
-          params: {
-            ...API_CREDENTIALS,
-          },
-          headers: {
-            Accept: "application/json",
-          },
-        });
+        const board = await fetchSingleBoard(id);
+        const response1 = await fetchlistsOfSingleBoard(id);
+        const response2 = await fetchAllCardsInBoard(id);
 
-        const response1 = await axios.get(
-          `https://api.trello.com/1/boards/${id}/lists`,
-          {
-            params: {
-              ...API_CREDENTIALS,
-            },
-            headers: {
-              Accept: "application/json",
-            },
-          }
-        );
-        const response2 = await axios.get(
-          `https://api.trello.com/1/boards/${id}/cards`,
-          {
-            params: {
-              ...API_CREDENTIALS,
-            },
-            headers: {
-              Accept: "application/json",
-            },
-          }
-        );
         setBoard(board.data);
-        let lists=response1.data;
-        setListsOfBoard(lists.filter((ele)=>!ele.closed));
+        let lists = response1.data;
+        setListsOfBoard(lists.filter((ele) => !ele.closed));
         setAllCardsInBoard(response2.data);
       } catch (err) {
         console.log("Unable to fetch lists of board", err.message);
@@ -81,28 +43,47 @@ const BoardList = () => {
     fetch();
   }, []);
 
-  const handleDeleteList = async (id) => {
-    console.log(id);
-    let value=true;
+  const handleArchiveList = async (id) => {
     try {
-     let responsde= await axios.put(`https://api.trello.com/1/lists/${id}/closed`,
-      null,
-       {
-      
-        params: {value: true,...API_CREDENTIALS},
+      let responsde = await axios.put(
+        `https://api.trello.com/1/lists/${id}/closed`,
+        null,
+        {
+          params: { value: true, ...API_CREDENTIALS },
+        }
+      );
+      setListsOfBoard((prev) => {
+        return prev.filter((ele) => {
+          return ele.id != id;
+        });
       });
-      setListsOfBoard((prev)=>{
-        return prev.filter((ele)=>{
-          return ele.id!=id;
-        })
-      })
       console.log("List deleted successfully");
-
-      // You can also notify the parent component that the list is deleted
     } catch (error) {
       console.error("Error deleting list:", error.message);
     }
   };
+
+  async function handleAddNewList(event) {
+    event.preventDefault();
+    const listName = listNameRef.current.value.trim();
+    if (!listName) return;
+
+    try {
+      const response = await axios.post(
+        "https://api.trello.com/1/lists",
+        null,
+        {
+          params: { name: listName, idBoard: id, ...API_CREDENTIALS },
+        }
+      );
+
+      setListsOfBoard((prev) => [...prev, response.data]);
+      setShowForm(false);
+      listNameRef.current.value = "";
+    } catch (error) {
+      console.error("Error creating board:", error);
+    }
+  }
 
   let cardsForEachList = getcardsForEachList(allCardsInBoard);
 
@@ -123,7 +104,6 @@ const BoardList = () => {
         </Typography>
       </Box>
 
-      {/* Scrollable Content */}
       <Box
         sx={{
           flexGrow: 1,
@@ -134,18 +114,40 @@ const BoardList = () => {
       >
         <Grid container spacing={2} wrap="nowrap" sx={{ height: "auto" }}>
           {listsOfBoard.map((ele) => {
-            let id = ele.id;
-            let cards = cardsForEachList[id];
             return (
               <Grid
-                
                 key={ele.id}
                 sx={{ display: "inline-block", flexShrink: 0 }}
               >
-                <CardsInList list={ele} cards={cards} handleDeleteList={handleDeleteList}/>
+                <CardsInList
+                  list={ele}
+                  cards={cardsForEachList[ele.id]}
+                  handleArchiveList={handleArchiveList}
+                />
               </Grid>
             );
           })}
+          <Grid
+            key="create_list"
+            sx={{ display: "inline-block", flexShrink: 0 }}
+          >
+            {showForm ? (
+              <AddNewListForm
+                listNameRef={listNameRef}
+                setShowForm={setShowForm}
+                handleAddNewList={handleAddNewList}
+              />
+            ) : (
+              <Button
+                variant="contained"
+                onClick={() => {
+                  setShowForm(true);
+                }}
+              >
+                + Add List
+              </Button>
+            )}
+          </Grid>
         </Grid>
       </Box>
     </Box>

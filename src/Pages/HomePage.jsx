@@ -3,6 +3,7 @@ import { Box, Button, Typography, TextField } from "@mui/material";
 import axios from "axios";
 import Board from "../Components/Board";
 import API_CREDENTIALS from "../Credintials";
+// API_CREDENTIALS=process.env.REACT_APP_API_KEY_API_CREDENTIALS;
 
 function HomePage() {
   const [allBoards, setAllBoards] = useState([]);

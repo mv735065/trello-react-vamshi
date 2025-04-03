@@ -13,18 +13,16 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import CardInListStyles from "./CardInListStyles";
 
-const CardsInList = ({ list, cards,handleDeleteList }) => {
+const CardsInList = ({ list, cards, handleArchiveList }) => {
   const [cardsInList, setCardsInList] = useState(cards || []);
   const [isAddingCard, setIsAddingCard] = useState(false);
   const newCardTextRef = useRef();
 
-  console.log("Rendered CardsInList");
+  let styles = CardInListStyles();
 
-  // Handle click on "Add Card"
-  const handleAddCardClick = () => {
-    setIsAddingCard(true);
-  };
+  console.log("Rendered CardsInList");
 
   // Handle submitting a new card
   const handleCardSubmit = async () => {
@@ -48,35 +46,10 @@ const CardsInList = ({ list, cards,handleDeleteList }) => {
     }
   };
 
-  // Handle canceling the add card action
-  const handleCancel = () => {
-    setIsAddingCard(false);
-  };
-
-  // Handle deleting a list
-
-
   return (
-    <Card
-      sx={{
-        bgcolor: "#0f0f0f",
-        color: "white",
-        minWidth: 280,
-        maxWidth: 300,
-        borderRadius: "12px",
-        padding: "10px",
-        boxShadow: 3,
-      }}
-    >
+    <Card sx={styles.card}>
       {/* List Header */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "5px 10px",
-        }}
-      >
+      <Box sx={styles.box}>
         <Typography variant="subtitle1" fontWeight="bold">
           {list.name}
         </Typography>
@@ -84,30 +57,11 @@ const CardsInList = ({ list, cards,handleDeleteList }) => {
       </Box>
 
       {/* Cards List */}
-      <CardContent
-        sx={{
-          padding: "5px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 1,
-        }}
-      >
+      <CardContent sx={styles.cardContent}>
         <List sx={{ padding: 0 }}>
           {cardsInList.length > 0 ? (
             cardsInList.map((card) => (
-              <ListItem
-                key={card.id}
-                sx={{
-                  bgcolor: "#2c2c2c",
-                  padding: "8px 12px",
-                  borderRadius: "8px",
-                  marginBottom: "6px",
-                  color: "white",
-                  fontSize: "0.9rem",
-                  cursor: "pointer",
-                  "&:hover": { bgcolor: "#3a3a3a" },
-                }}
-              >
+              <ListItem key={card.id} sx={styles.listItem}>
                 {card.name}
               </ListItem>
             ))
@@ -118,15 +72,8 @@ const CardsInList = ({ list, cards,handleDeleteList }) => {
           )}
 
           {/* Input field for new card */}
-          {isAddingCard && (
-            <ListItem
-              sx={{
-                bgcolor: "#2c2c2c",
-                padding: "8px 12px",
-                borderRadius: "8px",
-                marginBottom: "6px",
-              }}
-            >
+          {isAddingCard ? (
+            <ListItem sx={styles.listItem}>
               <TextField
                 fullWidth
                 inputRef={newCardTextRef}
@@ -134,54 +81,44 @@ const CardsInList = ({ list, cards,handleDeleteList }) => {
                 size="small"
                 autoFocus
                 placeholder="Enter card name"
-                sx={{
-                  bgcolor: "white",
-                  color: "#DCDFE4",
-                  borderRadius: "10px",
-                }}
+                sx={styles.textField}
               />
-              <Button sx={{ color: "white", marginLeft: 1 }} onClick={handleCardSubmit}>
+              <Button
+                sx={{ color: "white", marginLeft: 1 }}
+                onClick={handleCardSubmit}
+              >
                 Add
               </Button>
-              <Button sx={{ color: "white", marginLeft: 1 }} onClick={handleCancel}>
+              <Button
+                sx={{ color: "white", marginLeft: 1 }}
+                onClick={() => setIsAddingCard(false)}
+              >
                 Cancel
               </Button>
             </ListItem>
+          ) : (
+            <Button
+              startIcon={<AddIcon />}
+              sx={{
+                ...styles.button,
+                "&:hover": { bgcolor: "#1a1a1a" },
+              }}
+              onClick={() => setIsAddingCard(true)}
+            >
+              Add a card
+            </Button>
           )}
         </List>
       </CardContent>
-
-      {/* Add a Card Button */}
-      <Button
-        startIcon={<AddIcon />}
-        sx={{
-          color: "white",
-          textTransform: "none",
-          fontSize: "0.9rem",
-          padding: "5px 10px",
-          width: "100%",
-          justifyContent: "start",
-          "&:hover": { bgcolor: "#1a1a1a" },
-        }}
-        onClick={handleAddCardClick}
-      >
-        Add a card
-      </Button>
-      <p></p>
       {/* Delete Button */}
       <Button
         sx={{
-          color: "white",
-          textTransform: "none",
-          fontSize: "0.9rem",
-          padding: "5px auto",
-          width: "100%",
-          bgcolor:'red',
-          justifyContent: "center",
-          "&:hover": { bgcolor: "#ff4d4d" }, // Red color when hovering
+          ...styles.button,
+          bgcolor: "red",
+          "&:hover": { bgcolor: "#ff4d4d" },
           marginTop: 2,
         }}
-        onClick={()=>handleDeleteList(list.id)}
+        onClick={() => handleArchiveList(list.id)}
       >
         Archive List
       </Button>
