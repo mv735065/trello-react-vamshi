@@ -29,7 +29,7 @@ const Board = ({ board }) => {
             height: "100%",
             display: "flex",
             justifyContent: "space-between",
-          
+            bgcolor:`${board.prefs.backgroundColor}`
           }}
         >
           <Typography variant="h5" component="div">

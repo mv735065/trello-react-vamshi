@@ -1,6 +1,6 @@
 import axios from "axios";
 import API_CREDENTIALS from "../Credintials";
-import React, { useRef, useState } from "react";
+import React, { useReducer, useRef, useState } from "react";
 import {
   Card,
   Box,
@@ -9,29 +9,41 @@ import {
   List,
   ListItem,
   Button,
-  TextField,Modal,
+  TextField,
+  Modal,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import StylesCardInList from "./StylesCardInList";
+import CheckList from "./CheckList";
 
-// const modalStyles 
+import CardReducer, { initialState } from "./CardReducer";
 
 const CardsInList = ({ list, cards, handleArchiveList }) => {
-  const [cardsInList, setCardsInList] = useState(cards || []);
-  const [isAddingCard, setIsAddingCard] = useState(false);
-  const newCardTextRef = useRef();
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [selectedCard, setSelectedCard] = useState(null);
+
+  const [cardsInList, dispatch] = useReducer(CardReducer, {
+    ...initialState,
+    cards: cards || [],
+  });
+  const [status, setStatus] = useState({
+    isAddingCard: false,
+    selectedCard: null,
+  });
+  const inputFieldForNewCardName = useRef(); 
+
   const handleCardClick = (card) => {
-    setSelectedCard(card);
-    setIsPopupOpen(true);
+    setStatus({
+      ...status,
+      selectedCard: card,
+    });
   };
 
   // Function to close the popup
   const handleClosePopup = () => {
-    setIsPopupOpen(false);
-    setSelectedCard(null);
+    setStatus({
+      ...status,
+      selectedCard: null,
+    });
   };
 
   let styles = StylesCardInList();
@@ -40,11 +52,11 @@ const CardsInList = ({ list, cards, handleArchiveList }) => {
 
   // Handle submitting a new card
   const handleAddNewCard = async () => {
-    const cardName = newCardTextRef.current?.value.trim();
+    const cardName = inputFieldForNewCardName.current?.value.trim();
     if (!cardName) return;
 
     try {
-      const response = await axios.post(
+      const responseCard = await axios.post(
         "https://api.trello.com/1/cards",
         null,
         {
@@ -52,143 +64,145 @@ const CardsInList = ({ list, cards, handleArchiveList }) => {
         }
       );
 
-      setCardsInList((prev) => [...prev, response.data]);
-      newCardTextRef.current.value = "";
-      setIsAddingCard(false);
+      dispatch({
+        type:'addNewCard',
+        data:responseCard.data,
+      })
+     
+      setStatus({
+        ...status,
+        isAddingCard: false,
+      });
+      inputFieldForNewCardName.current.value = "";
     } catch (error) {
       console.error("Error creating card:", error);
     }
   };
 
- async function handleDeleteCard(){
-     let id=selectedCard.id;
-      try{
-         let response=await axios.delete(`https://api.trello.com/1/cards/${id}`,
-          {
-            params: { ...API_CREDENTIALS },
-          }
-         )
-         setIsPopupOpen(false);
-         setSelectedCard(null);
-         setCardsInList((prev)=>{
-          return prev.filter((ele)=>ele.id!=id)
-         });
-         
-
-      }
-      catch(err){
-        console.log('unable to deleted the card ',err.message);
-        
-      }
+  async function handleDeleteCard() {
+    let id = status.selectedCard.id;
+    try {
+      let response = await axios.delete(
+        `https://api.trello.com/1/cards/${id}`,
+        {
+          params: { ...API_CREDENTIALS },
+        }
+      );
+      dispatch({
+        type:'deleteCard',
+        id:id,
+      })
+      setStatus({
+        ...status,
+        selectedCard: null,
+      });
+  
+    } catch (err) {
+      console.log("unable to deleted the card ", err.message);
+    }
   }
 
   return (
     <>
-    <Card sx={styles.card}>
-      {/* List Header */}
-      <Box sx={styles.box}>
-        <Typography variant="subtitle1" fontWeight="bold">
-          {list.name}
-        </Typography>
-        <MoreHorizIcon sx={{ fontSize: 18, cursor: "pointer" }} />
-      </Box>
-
-      {/* Cards List */}
-      <CardContent sx={styles.cardContent}>
-        <List sx={{ padding: 0 }}>
-          {cardsInList.length > 0 ? (
-            cardsInList.map((card) => (
-              <ListItem key={card.id} sx={styles.listItem} onClick={() => handleCardClick(card)}>
-                {card.name}
-              </ListItem>
-            ))
-          ) : (
-            <Typography variant="body2" color="gray">
-              No cards in this list
-            </Typography>
-          )}
-
-          {/* Input field for new card */}
-          {isAddingCard ? (
-            <ListItem sx={styles.listItem}>
-              <TextField
-                fullWidth
-                inputRef={newCardTextRef}
-                variant="outlined"
-                size="small"
-                autoFocus
-                placeholder="Enter card name"
-                sx={styles.textField}
-              />
-              <Button
-                sx={{ color: "white", marginLeft: 1 }}
-                onClick={handleAddNewCard}
-              >
-                Add
-              </Button>
-              <Button
-                sx={{ color: "white", marginLeft: 1 }}
-                onClick={() => setIsAddingCard(false)}
-              >
-                Cancel
-              </Button>
-            </ListItem>
-          ) : (
-            <Button
-              startIcon={<AddIcon />}
-              sx={{
-                ...styles.addButton,
-              }}
-              onClick={() => setIsAddingCard(true)}
-            >
-              Add a card
-            </Button>
-          )}
-        </List>
-      </CardContent>
-      {/* Delete Button */}
-      <Button
-        sx={{
-          ...styles.deleteButton,
-        }}
-        onClick={() => handleArchiveList(list.id)}
-      >
-        Archive List
-      </Button>
-    </Card>
-    <Modal open={isPopupOpen} onClose={handleClosePopup}>
-        <Box sx={styles.modalStyles}>
-          {/* Close Button */}
-          <Button
-            sx={styles.Xmark}
-            onClick={handleClosePopup}
-          >
-            X
-          </Button>
-
-          <Typography variant="h5" gutterBottom  sx={{color:'white'}}>
-            {selectedCard?.name}
+      <Card sx={styles.card}>
+        {/* List Header */}
+        <Box sx={styles.box}>
+          <Typography variant="subtitle1" fontWeight="bold">
+            {list.name}
           </Typography>
-
-          {/* Buttons for Delete and Checklist */}
-          <Box>
-            <Button
-              variant="contained"
-              color="error"
-              sx={{ marginRight: 2 }}
-              onClick={handleDeleteCard}
-            >
-              Delete
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => console.log("Checklist clicked", selectedCard?.id)}
-            >
-              Checklist
-            </Button>
-          </Box>
+          <MoreHorizIcon sx={{ fontSize: 18, cursor: "pointer" }} />
         </Box>
+
+        {/* Cards List */}
+        <CardContent sx={styles.cardContent}>
+          <List sx={{ padding: 0 }}>
+            {cardsInList.cards.length > 0 ? (
+              cardsInList.cards.map((card) => (
+                <ListItem
+                  key={card.id}
+                  sx={styles.listItem}
+                  onClick={() => handleCardClick(card)}
+                >
+                  {card.name}
+                </ListItem>
+              ))
+            ) : (
+              <Typography variant="body2" color="gray">
+                No cards in this list
+              </Typography>
+            )}
+
+            {/* Input field for new card */}
+            {status.isAddingCard ? (
+              <ListItem sx={styles.listItem}>
+                <TextField
+                  fullWidth
+                  inputRef={inputFieldForNewCardName}
+                  variant="outlined"
+                  size="small"
+                  autoFocus
+                  placeholder="Enter card name"
+                  sx={styles.textField}
+                  
+                />
+                <Button
+                  sx={{ color: "white", marginLeft: 0.5 }}
+                  onClick={handleAddNewCard}
+                >
+                  Add
+                </Button>
+                <Button
+                  sx={{ color: "white", marginLeft: 0.5 }}
+                  onClick={() =>
+                    setStatus({
+                      ...status,
+                      isAddingCard: false,
+                    })
+                  }
+                >
+                  Cancel
+                </Button>
+              </ListItem>
+            ) : (
+              <Button
+                startIcon={<AddIcon />}
+                sx={{
+                  ...styles.addButton,
+                }}
+                onClick={() =>
+                  setStatus({
+                    ...status,
+                    isAddingCard: true,
+                  })
+                }
+              >
+                Add a card
+              </Button>
+            )}
+          </List>
+        </CardContent>
+        {/* Delete Button */}
+        <Button
+          sx={{
+            ...styles.deleteButton,
+          }}
+          onClick={() => handleArchiveList(list.id)}
+        >
+          Archive List
+        </Button>
+      </Card>
+
+      <Modal
+        open={status.selectedCard}
+        onClose={handleClosePopup}
+        // key={status.selectedCard}
+      >
+        <CheckList
+          handleClosePopup={handleClosePopup}
+          key={status.selectedCard}
+          status={status}
+          handleDeleteCard={handleDeleteCard}
+        />
       </Modal>
     </>
   );

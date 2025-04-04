@@ -85,7 +85,12 @@ function HomePage() {
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          style={{ display: "flex",flexDirection:'column', alignItems: "center", gap: "10px" }}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "10px",
+          }}
         >
           <TextField
             inputRef={boardNameRef}
@@ -93,14 +98,18 @@ function HomePage() {
             variant="outlined"
             size="small"
           />
-        <div style={{ display: "flex", gap: "1px" }}>
-        <Button type="submit" variant="contained" color="primary">
-            Add Board
-          </Button>
-          <Button  variant="contained" color="primary" onClick={()=>setShowForm(false)}>
-            Cancel
-          </Button>
-        </div>
+          <div style={{ display: "flex", gap: "1px" }}>
+            <Button type="submit" variant="contained" color="primary">
+              Add Board
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setShowForm(false)}
+            >
+              Cancel
+            </Button>
+          </div>
         </form>
       )}
     </Box>
