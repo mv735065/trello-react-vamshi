@@ -23,11 +23,10 @@ import API_CREDENTIALS from "../Credintials";
 const CheckListItems = ({ checkList, handleDeleteCheckList }) => {
   let id = checkList.id;
   let name = checkList.name;
-  let [items, setItems] = useState(checkList.checkItems || []);
   let cardId = checkList.idCard;
 
-  const [checked, setChecked] = useState([]);
-  let [isLoading, setIsLoading] = useState(false);
+  let [items, setItems] = useState(checkList.checkItems || []);
+
   let newItemRef = useRef();
 
   console.log("render items");

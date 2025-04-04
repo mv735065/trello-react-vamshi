@@ -1,21 +1,20 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { Box, Button, Typography, TextField } from "@mui/material";
 import axios from "axios";
 import Board from "../Components/Board";
 import API_CREDENTIALS from "../Credintials";
 // API_CREDENTIALS=process.env.REACT_APP_API_KEY_API_CREDENTIALS;
+import BoardReducer, { initialState } from "../Components/BoardReducer";
 
 function HomePage() {
-  const [allBoards, setAllBoards] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [showForm, setShowForm] = useState(false);
+  const [allBoards, dispatch] = useReducer(BoardReducer, initialState);
   const boardNameRef = useRef();
 
   console.log("render");
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
+      dispatch({ type: "Loading", loading: true });
       try {
         const response = await axios.get(
           "https://api.trello.com/1/members/me/boards",
@@ -25,12 +24,18 @@ function HomePage() {
           }
         );
 
-        setAllBoards(response.data);
-        console.log(response.data.length);
+        dispatch({
+          type: "allBoards",
+          data: response.data,
+        });
       } catch (error) {
-        console.error("Unable to fetch boards", error);
+        console.error("Unable to fetch boards", error.message);
+        dispatch({
+          type: "Error",
+          message: "Unable to fetch boards " + error.message,
+        });
       } finally {
-        setLoading(false);
+        dispatch({ type: "Loading", loading: false });
       }
     };
 
@@ -50,15 +55,21 @@ function HomePage() {
         }
       );
 
-      setAllBoards((prevBoards) => [...prevBoards, response.data]);
-
-      setShowForm(false);
+      dispatch({
+        type: "addNewBoard",
+        data: response.data,
+        showForm: false,
+      });
       boardNameRef.current.value = "";
     } catch (error) {
       console.error("Error creating board:", error);
+      dispatch({
+        type: "Error",
+        message: "Error creating board: " + error.message,
+      });
     }
   };
-  return loading ? (
+  return allBoards.loading ? (
     <Typography variant="h4">Loading...</Typography>
   ) : (
     <Box
@@ -70,19 +81,25 @@ function HomePage() {
         marginTop: "10px",
       }}
     >
-      {allBoards.map((board) => (
+      {allBoards.boards.map((board) => (
         <Board key={board.id} board={board} />
       ))}
 
       <Button
         variant="outlined"
         color="primary"
-        onClick={() => setShowForm(true)}
+        onClick={() => {
+         
+          dispatch({
+            type: "openForm",
+            showForm: true,
+          });
+        }}
       >
         Create New Board
       </Button>
 
-      {showForm && (
+      {allBoards.showForm && (
         <form
           onSubmit={handleSubmit}
           style={{
@@ -105,7 +122,12 @@ function HomePage() {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => setShowForm(false)}
+              onClick={() =>
+                dispatch({
+                  type: "openForm",
+                  showForm: false,
+                })
+              }
             >
               Cancel
             </Button>

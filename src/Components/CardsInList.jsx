@@ -38,7 +38,6 @@ const CardsInList = ({ list, cards, handleArchiveList }) => {
     });
   };
 
-  // Function to close the popup
   const handleClosePopup = () => {
     setStatus({
       ...status,
@@ -47,10 +46,8 @@ const CardsInList = ({ list, cards, handleArchiveList }) => {
   };
 
   let styles = StylesCardInList();
-
   console.log("Rendered CardsInList");
 
-  // Handle submitting a new card
   const handleAddNewCard = async () => {
     const cardName = inputFieldForNewCardName.current?.value.trim();
     if (!cardName) return;
