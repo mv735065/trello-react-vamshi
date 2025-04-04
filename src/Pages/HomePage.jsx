@@ -5,6 +5,14 @@ import Board from "../Components/Board";
 import API_CREDENTIALS from "../Credintials";
 // API_CREDENTIALS=process.env.REACT_APP_API_KEY_API_CREDENTIALS;
 import BoardReducer, { initialState } from "../Components/BoardReducer";
+// const apiKey = import.meta.env.REACT_APP_API_KEY;
+// const apiToken = import.meta.env.REACT_APP_API_TOKEN;
+
+// let API_CREDENTIALS={
+//   key:apiKey,
+//   token:apiToken
+// }
+
 
 function HomePage() {
   const [allBoards, dispatch] = useReducer(BoardReducer, initialState);

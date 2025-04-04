@@ -6,6 +6,13 @@ import axios from "axios";
 import CheckListItems from "./CheckListItem";
 import { useReducer } from "react";
 import AddIcon from "@mui/icons-material/Add";
+// const apiKey = process.env.REACT_APP_API_KEY;
+// const apiToken = process.env.REACT_APP_API_TOKEN;
+
+// let API_CREDENTIALS={
+//   key:apiKey,
+//   token:apiToken
+// }
 
 const CheckList = ({ handleClosePopup, status, handleDeleteCard }) => {
   let [checkLists, setCheckList] = useState([]);

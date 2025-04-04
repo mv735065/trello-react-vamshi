@@ -16,8 +16,15 @@ import AddIcon from "@mui/icons-material/Add";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import StylesCardInList from "./StylesCardInList";
 import CheckList from "./CheckList";
-
 import CardReducer, { initialState } from "./CardReducer";
+
+// const apiKey = process.env.REACT_APP_API_KEY;
+// const apiToken = process.env.REACT_APP_API_TOKEN;
+
+// let API_CREDENTIALS={
+//   key:apiKey,
+//   token:apiToken
+// }
 
 const CardsInList = ({ list, cards, handleArchiveList }) => {
 
