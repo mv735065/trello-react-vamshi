@@ -18,14 +18,14 @@ import AddIcon from "@mui/icons-material/Add";
 import CheckBoxOutlinedIcon from "@mui/icons-material/CheckBoxOutlined";
 import CheckBoxOutlineBlankOutlinedIcon from "@mui/icons-material/CheckBoxOutlineBlankOutlined";
 import axios from "axios";
-import API_CREDENTIALS from "../Credintials";
-// const apiKey = process.env.REACT_APP_API_KEY;
-// const apiToken = process.env.REACT_APP_API_TOKEN;
+const apiKey = import.meta.env.VITE_API_KEY;
+const apiToken = import.meta.env.VITE_API_TOKEN;
 
-// let API_CREDENTIALS={
-//   key:apiKey,
-//   token:apiToken
-// }
+let API_CREDENTIALS={
+  key:apiKey,
+  token:apiToken
+}
+
 
 const CheckListItems = ({ checkList, handleDeleteCheckList }) => {
   let id = checkList.id;
@@ -33,9 +33,7 @@ const CheckListItems = ({ checkList, handleDeleteCheckList }) => {
   let cardId = checkList.idCard;
 
   let [items, setItems] = useState(checkList.checkItems || []);
-
   let newItemRef = useRef();
-
   console.log("render items");
 
   const handleToggle = async (item) => {
@@ -111,7 +109,7 @@ const CheckListItems = ({ checkList, handleDeleteCheckList }) => {
     }
   }
   let checkedItems = items?.reduce((acc, ele) => {
-    return ele.state === "complete" ? acc + 1 : acc; 
+    return ele.state === "complete" ? acc + 1 : acc;
   }, 0);
 
   const progress = items.length ? (checkedItems / items.length) * 100 : 0;

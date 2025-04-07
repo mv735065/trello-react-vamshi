@@ -1,26 +1,29 @@
 import React, { useEffect, useRef, useState } from "react";
 import StylesCardInList from "./StylesCardInList";
-import API_CREDENTIALS from "../Credintials";
+
 import { Box, Typography, Button, TextField } from "@mui/material";
 import axios from "axios";
 import CheckListItems from "./CheckListItem";
 import { useReducer } from "react";
 import AddIcon from "@mui/icons-material/Add";
-// const apiKey = process.env.REACT_APP_API_KEY;
-// const apiToken = process.env.REACT_APP_API_TOKEN;
+import CheckListReducer, { initialState } from "../Reducers/CheckListReducer";
+const apiKey = import.meta.env.VITE_API_KEY;
+const apiToken = import.meta.env.VITE_API_TOKEN;
 
-// let API_CREDENTIALS={
-//   key:apiKey,
-//   token:apiToken
-// }
+let API_CREDENTIALS={
+  key:apiKey,
+  token:apiToken
+}
+
 
 const CheckList = ({ handleClosePopup, status, handleDeleteCard }) => {
-  let [checkLists, setCheckList] = useState([]);
-  let [isLoading, setIsLoading] = useState(true);
-  let inputFieldForCheckListName = useRef(); 
+  let [checkLists, dispatch] = useReducer(CheckListReducer, initialState);
+  let inputFieldForCheckListName = useRef();
   let cardId = status.selectedCard.id;
+  console.log("render checklist");
+
   useEffect(() => {
-    setIsLoading(true);
+    dispatch({ type: "SET_LOADING", isLoading: true });
 
     async function fetch() {
       try {
@@ -32,18 +35,20 @@ const CheckList = ({ handleClosePopup, status, handleDeleteCard }) => {
           }
         );
 
-        setCheckList(response1.data);
+        dispatch({
+          type: "fetchAllCheckLists",
+          data: response1.data,
+        });
       } catch (err) {
         console.log("Unable to fetch checklists ", err.message);
       } finally {
-        setIsLoading(false);
+        dispatch({ type: "SET_LOADING", isLoading: false });
       }
     }
     fetch();
   }, []);
 
   async function handleDeleteCheckList(checkListId) {
-    console.log("clicked checklist dele");
     try {
       let response = await axios.delete(
         `https://api.trello.com/1/cards/${cardId}/checklists/${checkListId}`,
@@ -51,8 +56,10 @@ const CheckList = ({ handleClosePopup, status, handleDeleteCard }) => {
           params: { ...API_CREDENTIALS },
         }
       );
-      setCheckList((prev) => {
-        return prev.filter((ele) => ele.id != checkListId);
+
+      dispatch({
+        type: "deleteCheckList",
+        id: checkListId,
       });
     } catch (err) {
       console.log("unable to deleted the checkLIst ", err.message);
@@ -60,8 +67,6 @@ const CheckList = ({ handleClosePopup, status, handleDeleteCard }) => {
   }
 
   async function handleAddNewCheckList() {
-    console.log(cardId);
-
     let name = inputFieldForCheckListName.current.value;
     if (!name) return;
     try {
@@ -76,12 +81,19 @@ const CheckList = ({ handleClosePopup, status, handleDeleteCard }) => {
           },
         }
       );
-      setCheckList((prev) => {
-        return [...prev, response.data];
+
+      dispatch({
+        type: "addNewCheckList",
+        data: response.data,
       });
+
       inputFieldForCheckListName.current.value = "";
     } catch (err) {
       console.log("unable to add the checkLIst ", err.message);
+      dispatch({
+        type: "Error",
+        error: "unable to add the checkLIst " + err.message,
+      });
     }
   }
 
@@ -125,22 +137,21 @@ const CheckList = ({ handleClosePopup, status, handleDeleteCard }) => {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => {
-                console.log("Checklist clicked", status.selectedCard?.id);
-                handleAddNewCheckList();
-              }}
+              onClick={handleAddNewCheckList}
               startIcon={<AddIcon />}
             >
               Add Checklist
             </Button>
           </Box>
         </Box>
-        {isLoading ? (
-          <p>Loading...</p>
+        {checkLists?.isLoading ? (
+          <Typography variant="h5" color="white">
+            Loading...
+          </Typography>
         ) : (
           <Box>
-            {checkLists?.length > 0 ? (
-              checkLists?.map((ele) => (
+            {checkLists.checkLists?.length > 0 ? (
+              checkLists.checkLists?.map((ele) => (
                 <CheckListItems
                   key={ele.id}
                   checkList={ele}
@@ -148,7 +159,7 @@ const CheckList = ({ handleClosePopup, status, handleDeleteCard }) => {
                 />
               ))
             ) : (
-              <Typography variant="body2" color="gray" align="center" p='30px'>
+              <Typography variant="body2" color="gray" align="center" p="30px">
                 No checklists in the card
               </Typography>
             )}

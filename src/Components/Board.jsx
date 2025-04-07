@@ -29,7 +29,16 @@ const Board = ({ board }) => {
             height: "100%",
             display: "flex",
             justifyContent: "space-between",
-            bgcolor:`${board.prefs.backgroundColor}`
+            bgcolor: board.prefs.backgroundImage
+              ? "none"
+              : `${board.prefs.backgroundColor}`,
+            backgroundImage: board.prefs.backgroundImage
+              ? `url(${board.prefs.backgroundImage})`
+              : "none",
+            backgroundSize: "cover", // Ensure the image covers the entire area
+            backgroundPosition: "center", // Center the image
+            backgroundRepeat: "no-repeat", // Avoid repeating the image
+
           }}
         >
           <Typography variant="h5" component="div">

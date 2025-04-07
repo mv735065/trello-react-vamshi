@@ -2,16 +2,15 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import { Box, Button, Typography, TextField } from "@mui/material";
 import axios from "axios";
 import Board from "../Components/Board";
-import API_CREDENTIALS from "../Credintials";
-// API_CREDENTIALS=process.env.REACT_APP_API_KEY_API_CREDENTIALS;
-import BoardReducer, { initialState } from "../Components/BoardReducer";
-// const apiKey = import.meta.env.REACT_APP_API_KEY;
-// const apiToken = import.meta.env.REACT_APP_API_TOKEN;
+import BoardReducer, { initialState } from "../Reducers/BoardReducer";
 
-// let API_CREDENTIALS={
-//   key:apiKey,
-//   token:apiToken
-// }
+const apiKey = import.meta.env.VITE_API_KEY;
+const apiToken = import.meta.env.VITE_API_TOKEN;
+
+let API_CREDENTIALS={
+  key:apiKey,
+  token:apiToken
+}
 
 
 function HomePage() {

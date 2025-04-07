@@ -1,5 +1,4 @@
 import axios from "axios";
-import API_CREDENTIALS from "../Credintials";
 import React, { useReducer, useRef, useState } from "react";
 import {
   Card,
@@ -16,15 +15,16 @@ import AddIcon from "@mui/icons-material/Add";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import StylesCardInList from "./StylesCardInList";
 import CheckList from "./CheckList";
-import CardReducer, { initialState } from "./CardReducer";
+import CardReducer, { initialState } from "../Reducers/CardReducer";
 
-// const apiKey = process.env.REACT_APP_API_KEY;
-// const apiToken = process.env.REACT_APP_API_TOKEN;
+const apiKey = import.meta.env.VITE_API_KEY;
+const apiToken = import.meta.env.VITE_API_TOKEN;
 
-// let API_CREDENTIALS={
-//   key:apiKey,
-//   token:apiToken
-// }
+let API_CREDENTIALS={
+  key:apiKey,
+  token:apiToken
+}
+
 
 const CardsInList = ({ list, cards, handleArchiveList }) => {
 

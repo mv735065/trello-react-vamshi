@@ -1,7 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState, useRef,useReducer } from "react";
-import { useParams, useLocation } from "react-router-dom";
-import API_CREDENTIALS from "../Credintials";
+import { useParams } from "react-router-dom";
 import { Typography, Box, Grid, Button, TextField } from "@mui/material";
 import CardsInList from "../Components/CardsInList";
 import AddNewListForm from "../Components/AddNewListForm";
@@ -9,7 +8,17 @@ import useBoardNavBarStyles from "../Components/UseBoardNavBarStyles";
 import fetchSingleBoard from "../Components/fetchSingleBoard";
 import fetchlistsOfSingleBoard from "../Components/fetchlistsOfSingleBoard";
 import fetchAllCardsInBoard from "../Components/fetchAllCardsInBoard";
-import listsReducer,{initialState} from "../Components/BoardListsReducer";
+import listsReducer,{initialState} from "../Reducers/BoardListsReducer";
+import ErrorPage from "./ErrorPage";
+
+const apiKey = import.meta.env.VITE_API_KEY;
+const apiToken = import.meta.env.VITE_API_TOKEN;
+
+let API_CREDENTIALS={
+  key:apiKey,
+  token:apiToken
+}
+
 
 const BoardList = () => {
   const { id } = useParams();
@@ -31,11 +40,16 @@ const BoardList = () => {
           fetchAllCardsInBoard(id),
         ]);
 
-        setBoard(boardRes.data);
-        handleLists(listsRes.data);
+        dispatch({
+          type: "getAllLists",
+          list: listsRes.data,
+        })
         setAllCardsInBoard(cardsRes.data);
+        setBoard(boardRes.data);
+
       } catch (err) {
         console.log("Unable to fetch lists of board", err.message);
+        dispatch({type:'Error',error:"Unable to fetch lists of board "+ err.message})
       } finally {
         dispatch({ type: "SET_LOADING", loading: false });
       }
@@ -44,18 +58,7 @@ const BoardList = () => {
     fetch();
   }, []);
 
- async function handleLists(lists) {
-   try{
-      dispatch({
-      type: "getAllLists",
-      list: lists,
-    });
-   }
-   catch(err){
-    console.error("Error getting all lists:", err.message);
-    
-   }
-  }
+
 
   async function handleArchiveList(id) {
     try {
@@ -66,6 +69,7 @@ const BoardList = () => {
       dispatch({ type: "archive", id });
     } catch (error) {
       console.error("Error deleting list:", error.message);
+      dispatch({type:'Error',error:"Error deleting list: "+ err.message})
     }
   }
   
@@ -88,6 +92,8 @@ const BoardList = () => {
       listNameRef.current.value = "";
     } catch (error) {
       console.error("Error creating board:", error);
+      dispatch({type:'Error',error:"Error creating board: "+ err.message})
+
     }
   }
   
@@ -96,9 +102,18 @@ const BoardList = () => {
 
   return listsOfBoard.loading ? (
     <Typography variant="h5">Loading...</Typography>
-  ) : (
+  ) : listsOfBoard.error ? (<ErrorPage errorMessage={listsOfBoard.error} />): (
     <Box
-      sx={styles.mainBox}
+      sx={{...styles.mainBox, bgcolor:  board?.prefs.backgroundImage
+        ? "none"
+        : `${ board.prefs.backgroundColor}`,
+      backgroundImage:  board.prefs.backgroundImage
+        ? `url(${ board.prefs.backgroundImage})`
+        : "none", 
+        backgroundSize: "cover", // Ensure the image covers the entire area
+        backgroundPosition: "center", // Center the image
+        backgroundRepeat: "no-repeat", // Avoid repeating the image
+      } }
     >
       {/* Navbar (Fixed at the top) */}
       <Box className="boardNavBar" sx={styles.boardNavBar}>
@@ -108,7 +123,7 @@ const BoardList = () => {
       </Box>
 
       <Box
-        sx={styles.box}
+        sx={{...styles.box,}}
       >
         <Grid container spacing={2} wrap="nowrap" sx={{ height: "auto" }}>
           {listsOfBoard?.lists?.map((ele) => {

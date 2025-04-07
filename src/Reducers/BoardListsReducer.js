@@ -31,6 +31,11 @@ const listsReducer = (state = initialState, action) => {
         ...state,
         loading: action.loading,
       };
+    case "Error":
+      return {
+        ...state,
+        error: action.error,
+      };
 
     default:
       return state;

@@ -1,6 +1,13 @@
 import React from 'react'
 import axios from "axios";
-import API_CREDENTIALS from "../Credintials";
+const apiKey = import.meta.env.VITE_API_KEY;
+const apiToken = import.meta.env.VITE_API_TOKEN;
+
+let API_CREDENTIALS={
+  key:apiKey,
+  token:apiToken
+}
+
 
 
 const fetchSingleBoard = (id) => {
