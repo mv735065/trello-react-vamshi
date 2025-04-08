@@ -20,14 +20,12 @@ import CardReducer, { initialState } from "../Reducers/CardReducer";
 const apiKey = import.meta.env.VITE_API_KEY;
 const apiToken = import.meta.env.VITE_API_TOKEN;
 
-let API_CREDENTIALS={
-  key:apiKey,
-  token:apiToken
-}
-
+let API_CREDENTIALS = {
+  key: apiKey,
+  token: apiToken,
+};
 
 const CardsInList = ({ list, cards, handleArchiveList }) => {
-
   const [cardsInList, dispatch] = useReducer(CardReducer, {
     ...initialState,
     cards: cards || [],
@@ -36,7 +34,7 @@ const CardsInList = ({ list, cards, handleArchiveList }) => {
     isAddingCard: false,
     selectedCard: null,
   });
-  const inputFieldForNewCardName = useRef(); 
+  const inputFieldForNewCardName = useRef();
 
   const handleCardClick = (card) => {
     setStatus({
@@ -69,10 +67,10 @@ const CardsInList = ({ list, cards, handleArchiveList }) => {
       );
 
       dispatch({
-        type:'addNewCard',
-        data:responseCard.data,
-      })
-     
+        type: "addNewCard",
+        data: responseCard.data,
+      });
+
       setStatus({
         ...status,
         isAddingCard: false,
@@ -93,14 +91,13 @@ const CardsInList = ({ list, cards, handleArchiveList }) => {
         }
       );
       dispatch({
-        type:'deleteCard',
-        id:id,
-      })
+        type: "deleteCard",
+        id: id,
+      });
       setStatus({
         ...status,
         selectedCard: null,
       });
-  
     } catch (err) {
       console.log("unable to deleted the card ", err.message);
     }
@@ -147,7 +144,6 @@ const CardsInList = ({ list, cards, handleArchiveList }) => {
                   autoFocus
                   placeholder="Enter card name"
                   sx={styles.textField}
-                  
                 />
                 <Button
                   sx={{ color: "white", marginLeft: 0.5 }}

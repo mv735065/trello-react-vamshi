@@ -15,7 +15,7 @@ const Board = ({ board }) => {
     <Card key={board.id} sx={{ height: "200px" }}>
       <CardActionArea
         onClick={() => {
-          navigate(`/boards/${board.id}`, { state: { board } });
+          navigate(`/boards/${board.id}`);
         }}
         sx={{
           height: "100%",

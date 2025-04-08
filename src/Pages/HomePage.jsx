@@ -23,6 +23,7 @@ function HomePage() {
 
   useEffect(() => {
     const fetchData = async () => {
+    
       try {
         const response = await axios.get(
           "https://api.trello.com/1/members/me/boards",
