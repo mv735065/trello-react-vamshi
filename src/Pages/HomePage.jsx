@@ -1,27 +1,28 @@
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Box, Button, Typography, TextField } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import Board from "../Components/Board";
-import BoardReducer, { initialState } from "../Reducers/BoardReducer";
+import ErrorPage from "./ErrorPage";
+import { setLoading, setAllBoards, setError, addNewBoard, setShowForm } from '../Utils/BoardSlice';// Import the actions from boardSlice
 
 const apiKey = import.meta.env.VITE_API_KEY;
 const apiToken = import.meta.env.VITE_API_TOKEN;
 
-let API_CREDENTIALS={
-  key:apiKey,
-  token:apiToken
-}
-
+let API_CREDENTIALS = {
+  key: apiKey,
+  token: apiToken
+};
 
 function HomePage() {
-  const [allBoards, dispatch] = useReducer(BoardReducer, initialState);
+  const dispatch = useDispatch();
+  const allBoards = useSelector((state) => state.board); 
   const boardNameRef = useRef();
 
-  console.log("render");
+  console.log("render homePage");
 
   useEffect(() => {
     const fetchData = async () => {
-      dispatch({ type: "Loading", loading: true });
       try {
         const response = await axios.get(
           "https://api.trello.com/1/members/me/boards",
@@ -31,23 +32,16 @@ function HomePage() {
           }
         );
 
-        dispatch({
-          type: "allBoards",
-          data: response.data,
-        });
+        dispatch(setAllBoards(response.data)); // Dispatch all boards data
       } catch (error) {
         console.error("Unable to fetch boards", error.message);
-        dispatch({
-          type: "Error",
-          message: "Unable to fetch boards " + error.message,
-        });
-      } finally {
-        dispatch({ type: "Loading", loading: false });
-      }
+        dispatch(setError("Unable to fetch boards " + error.message)); // Dispatch error action
+      } 
     };
 
     fetchData();
   }, []);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     const boardName = boardNameRef.current.value.trim();
@@ -62,23 +56,16 @@ function HomePage() {
         }
       );
 
-      dispatch({
-        type: "addNewBoard",
-        data: response.data,
-        showForm: false,
-      });
-      boardNameRef.current.value = "";
+      dispatch(addNewBoard(response.data)); 
     } catch (error) {
       console.error("Error creating board:", error);
-      dispatch({
-        type: "Error",
-        message: "Error creating board: " + error.message,
-      });
+      dispatch(setError("Error creating board: " + error.message)); 
     }
   };
-  return allBoards.loading ? (
+
+  return allBoards.loading ?  (
     <Typography variant="h4">Loading...</Typography>
-  ) : (
+  )  :  allBoards.error ? <ErrorPage errorMessage={allBoards.error} /> : (
     <Box
       sx={{
         width: "100%",
@@ -96,11 +83,7 @@ function HomePage() {
         variant="outlined"
         color="primary"
         onClick={() => {
-         
-          dispatch({
-            type: "openForm",
-            showForm: true,
-          });
+          dispatch(setShowForm(true));
         }}
       >
         Create New Board
@@ -129,12 +112,7 @@ function HomePage() {
             <Button
               variant="contained"
               color="primary"
-              onClick={() =>
-                dispatch({
-                  type: "openForm",
-                  showForm: false,
-                })
-              }
+              onClick={() => dispatch(setShowForm(false))} 
             >
               Cancel
             </Button>
