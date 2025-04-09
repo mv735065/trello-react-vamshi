@@ -3,80 +3,45 @@ import { Box, Button, Typography, TextField } from "@mui/material";
 import axios from "axios";
 import Board from "../Components/Board";
 import BoardReducer, { initialState } from "../Reducers/BoardReducer";
+import { useDispatch, useSelector } from "react-redux";
+import { addBoard, fetchBoards } from "../Utils/boardSlice";
 
 const apiKey = import.meta.env.VITE_API_KEY;
 const apiToken = import.meta.env.VITE_API_TOKEN;
 
-let API_CREDENTIALS={
-  key:apiKey,
-  token:apiToken
-}
-
+let API_CREDENTIALS = {
+  key: apiKey,
+  token: apiToken,
+};
 
 function HomePage() {
-  const [allBoards, dispatch] = useReducer(BoardReducer, initialState);
+  const dispatch = useDispatch();
+
+  const { boards, status, error } = useSelector((state) => state.board);
+  const [showForm, setShowForm] = useState(false);
   const boardNameRef = useRef();
 
   console.log("render");
 
   useEffect(() => {
-    const fetchData = async () => {
-      dispatch({ type: "Loading", loading: true });
-      try {
-        const response = await axios.get(
-          "https://api.trello.com/1/members/me/boards",
-          {
-            params: API_CREDENTIALS,
-            headers: { Accept: "application/json" },
-          }
-        );
+    if (status == "idle") {
+      console.log("inside idle");
 
-        dispatch({
-          type: "allBoards",
-          data: response.data,
-        });
-      } catch (error) {
-        console.error("Unable to fetch boards", error.message);
-        dispatch({
-          type: "Error",
-          message: "Unable to fetch boards " + error.message,
-        });
-      } finally {
-        dispatch({ type: "Loading", loading: false });
-      }
-    };
-
-    fetchData();
-  }, []);
+      dispatch(fetchBoards());
+    }
+  });
   const handleSubmit = async (event) => {
     event.preventDefault();
     const boardName = boardNameRef.current.value.trim();
-    if (!boardName) return;
-
-    try {
-      const response = await axios.post(
-        "https://api.trello.com/1/boards/",
-        null,
-        {
-          params: { name: boardName, ...API_CREDENTIALS },
-        }
-      );
-
-      dispatch({
-        type: "addNewBoard",
-        data: response.data,
-        showForm: false,
-      });
-      boardNameRef.current.value = "";
-    } catch (error) {
-      console.error("Error creating board:", error);
-      dispatch({
-        type: "Error",
-        message: "Error creating board: " + error.message,
-      });
+    if (!boardName){
+      setShowForm(false);
+      return;
     }
+    dispatch(addBoard(boardName));
+    boardNameRef.current.value='';
+    setShowForm(false);
   };
-  return allBoards.loading ? (
+  return status === "loading" ? (
     <Typography variant="h4">Loading...</Typography>
   ) : (
     <Box
@@ -88,25 +53,23 @@ function HomePage() {
         marginTop: "10px",
       }}
     >
-      {allBoards.boards.map((board) => (
-        <Board key={board.id} board={board} />
+      <h1>{boards.length}</h1>
+      {boards.map((board) => (
+        // <Board key={board.id} board={board} />
+        <h1>{board.name}</h1>
       ))}
 
       <Button
         variant="outlined"
         color="primary"
         onClick={() => {
-         
-          dispatch({
-            type: "openForm",
-            showForm: true,
-          });
+          setShowForm(true);
         }}
       >
         Create New Board
       </Button>
 
-      {allBoards.showForm && (
+      {showForm && (
         <form
           onSubmit={handleSubmit}
           style={{
@@ -126,16 +89,7 @@ function HomePage() {
             <Button type="submit" variant="contained" color="primary">
               Add Board
             </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() =>
-                dispatch({
-                  type: "openForm",
-                  showForm: false,
-                })
-              }
-            >
+            <Button variant="contained" color="primary" onClick={()=>setShowForm(false)}>
               Cancel
             </Button>
           </div>
