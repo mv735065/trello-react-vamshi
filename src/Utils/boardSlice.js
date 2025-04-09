@@ -28,6 +28,23 @@ const addNewBoardFromApi = async (name) => {
   return response;
 };
 
+const fetchSingleBoardFromApi = async(id) => {
+    const response = await axios.get(`https://api.trello.com/1/boards/${id}`, {
+      params: {
+        ...API_CREDENTIALS,
+      },
+      headers: {
+        Accept: "application/json",
+      },
+    });
+    return response;
+  }
+  export const fetchSingleBoard=createAsyncThunk("board/fetchSingleBoard", async (id) => {
+    const response = await fetchSingleBoardFromApi(id);
+    return response.data;
+  });
+
+
 export const fetchBoards = createAsyncThunk("board/fetchBoards", async () => {
   const response = await fetchBoardsFromApi();
   return response.data;
@@ -38,14 +55,21 @@ export const addBoard = createAsyncThunk("board/addBoard", async (name) => {
     return response.data;
   });
 
+
+
 const boardSlice = createSlice({
   name: "board",
   initialState: {
     status: "idle",
     boards: [],
+    currentBoard:null,
     error: null,
   },
-  reducers: {},
+  reducers: {
+    clearBoard: (state) => {
+      state.currentBoard = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchBoards.pending, (state) => {
@@ -57,18 +81,34 @@ const boardSlice = createSlice({
       })
       .addCase(fetchBoards.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.error.message;
-      });
+        state.error = action.error.message || "Failed to fetch boards";
+      })
 
-      builder
       .addCase(addBoard.fulfilled,(state,action)=>{
         state.boards.push(action.payload);
       })
       .addCase(addBoard.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message; 
-      });
+      })
+
+      .addCase(fetchSingleBoard.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchSingleBoard.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.currentBoard = action.payload; // Store single board data
+        
+      })
+      .addCase(fetchSingleBoard.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message || "Failed to fetch the board";
+      })
+     
+     
   },
 });
 
 export default boardSlice.reducer;
+
+export const {clearBoard}=boardSlice.actions;

@@ -10,8 +10,8 @@ let API_CREDENTIALS={
 
 
 
-const fetchSingleBoard = (id) => {
-  return axios.get(`https://api.trello.com/1/boards/${id}`, {
+const fetchSingleBoard = async (id) => {
+  return await axios.get(`https://api.trello.com/1/boards/${id}`, {
     params: {
       ...API_CREDENTIALS,
     },

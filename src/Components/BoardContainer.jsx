@@ -7,12 +7,16 @@ import {
   CardActionArea,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
-const Board = ({ board }) => {
+const Board = () => {
   const navigate = useNavigate();
+  const {boards} =useSelector(state=>state.board)
 
   return (
-    <Card key={board.id} sx={{ height: "200px" }}>
+    <>
+    {boards.map((board)=>{
+      return <Card key={board.id} sx={{ height: "200px" }}>
       <CardActionArea
         onClick={() => {
           navigate(`/boards/${board.id}`, { state: { board } });
@@ -50,6 +54,10 @@ const Board = ({ board }) => {
         </CardContent>
       </CardActionArea>
     </Card>
+    })}
+    
+    </>
+
   );
 };
 
