@@ -1,7 +1,8 @@
 import axios from "axios";
 import React, { useEffect, useState, useRef, useReducer } from "react";
 import { useParams } from "react-router-dom";
-import { Typography, Box, Grid, Button, TextField } from "@mui/material";
+import { Typography, Box, Grid, Button,TextField,
+  Modal,} from "@mui/material";
 import CardsInList from "../Components/CardsInList";
 import OpenForm from "../Components/OpenFormToCreate";
 import useBoardNavBarStyles from "../Components/UseBoardNavBarStyles";
@@ -9,6 +10,7 @@ import fetchSingleBoard from "../Components/fetchSingleBoard";
 import fetchlistsOfSingleBoard from "../Components/fetchlistsOfSingleBoard";
 import fetchAllCardsInBoard from "../Components/fetchAllCardsInBoard";
 import listsReducer, { initialState } from "../Reducers/BoardListsReducer";
+import CheckList from "../Components/CheckList";
 import ErrorPage from "./ErrorPage";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -19,6 +21,9 @@ import {
   archiveList,
   clearAllPrevData,
 } from "../Utils/boardListSlice";
+import { getAllCards } from "../Utils/CardSlice";
+import { setSelectedCard } from "../Utils/SelectedCardSlice";
+
 
 const apiKey = import.meta.env.VITE_API_KEY;
 const apiToken = import.meta.env.VITE_API_TOKEN;
@@ -32,6 +37,7 @@ const BoardList = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const allData = useSelector((state) => state.lists);
+ const selectedCard=useSelector(state=>state.selectedCard)
 
   const styles = useBoardNavBarStyles();
 
@@ -49,9 +55,10 @@ const BoardList = () => {
           getAllData({
             board: boardRes.data,
             lists: listsRes.data,
-            cards: cardsRes.data,
+            cards:[],
           })
         );
+        dispatch(getAllCards(cardsRes.data)); // this goes to cardSlice
       } catch (error) {
         dispatch(
           setError("Unable to fetch lists or cards of board " + error.message)
@@ -97,7 +104,10 @@ const BoardList = () => {
     dispatch(showForm(value));
   }
 
-  let cardsForEachList = getcardsForEachList(allData.allCardsInBoard || []);
+    const handleClosePopup = () => {
+      dispatch(setSelectedCard(null));
+  
+    };
 
   return allData.loading ? (
     <Typography variant="h5">Loading...</Typography>
@@ -133,7 +143,6 @@ const BoardList = () => {
               >
                 <CardsInList
                   list={ele}
-                  cards={cardsForEachList[ele.id]}
                   handleArchiveList={handleArchiveList}
                 />
               </Grid>
@@ -147,6 +156,7 @@ const BoardList = () => {
               <OpenForm
                 handleForm={handleForm}
                 handleAddNewList={handleAddNewList}
+                formName={"Enter List Name"}
               />
             ) : (
               <Button
@@ -161,6 +171,15 @@ const BoardList = () => {
           </Grid>
         </Grid>
       </Box>
+        {selectedCard &&  <Modal
+                open={selectedCard}
+                onClose={handleClosePopup}
+              >
+                <CheckList
+                  key={selectedCard?.id}
+                />
+              </Modal>}
+
     </Box>
   );
 };

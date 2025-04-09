@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useReducer, useRef, useState } from "react";
+import React, { useReducer, useRef, useState, useEffect } from "react";
 import {
   Card,
   Box,
@@ -16,6 +16,15 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import StylesCardInList from "./StylesCardInList";
 import CheckList from "./CheckList";
 import CardReducer, { initialState } from "../Reducers/CardReducer";
+import OpenForm from "./OpenFormToCreate";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addNewCard,
+  deleteCard,
+  setError,
+} from "../Utils/CardSlice";
+
+import { setSelectedCard } from "../Utils/SelectedCardSlice";
 
 const apiKey = import.meta.env.VITE_API_KEY;
 const apiToken = import.meta.env.VITE_API_TOKEN;
@@ -25,36 +34,26 @@ let API_CREDENTIALS = {
   token: apiToken,
 };
 
-const CardsInList = ({ list, cards, handleArchiveList }) => {
-  const [cardsInList, dispatch] = useReducer(CardReducer, {
-    ...initialState,
-    cards: cards || [],
-  });
-  const [status, setStatus] = useState({
-    isAddingCard: false,
-    selectedCard: null,
-  });
-  const inputFieldForNewCardName = useRef();
+const CardsInList = ({ list, handleArchiveList }) => {
+  const dispatch = useDispatch();
+  const cardsData = useSelector((state) => state.card);
+  let [form,setForm]=useState(false);
+  let selectedCard=useSelector(state=>state.selectedCard);
 
   const handleCardClick = (card) => {
-    setStatus({
-      ...status,
-      selectedCard: card,
-    });
+    dispatch(setSelectedCard(card));
   };
 
   const handleClosePopup = () => {
-    setStatus({
-      ...status,
-      selectedCard: null,
-    });
+    dispatch(setSelectedCard(null));
+
   };
 
   let styles = StylesCardInList();
   console.log("Rendered CardsInList");
 
-  const handleAddNewCard = async () => {
-    const cardName = inputFieldForNewCardName.current?.value.trim();
+  const handleAddNewCard = async (cardName) => {
+
     if (!cardName) return;
 
     try {
@@ -66,23 +65,16 @@ const CardsInList = ({ list, cards, handleArchiveList }) => {
         }
       );
 
-      dispatch({
-        type: "addNewCard",
-        data: responseCard.data,
-      });
+      dispatch(addNewCard(responseCard.data));
+      setForm(false);
 
-      setStatus({
-        ...status,
-        isAddingCard: false,
-      });
-      inputFieldForNewCardName.current.value = "";
     } catch (error) {
-      console.error("Error creating card:", error);
+      dispatch(setError("Error creating card:" + error.message));
     }
   };
 
   async function handleDeleteCard() {
-    let id = status.selectedCard.id;
+    let id = selectedCard?.id;
     try {
       let response = await axios.delete(
         `https://api.trello.com/1/cards/${id}`,
@@ -90,19 +82,15 @@ const CardsInList = ({ list, cards, handleArchiveList }) => {
           params: { ...API_CREDENTIALS },
         }
       );
-      dispatch({
-        type: "deleteCard",
-        id: id,
-      });
-      setStatus({
-        ...status,
-        selectedCard: null,
-      });
+      dispatch(deleteCard(id));
     } catch (err) {
-      console.log("unable to deleted the card ", err.message);
+      dispatch(setError("unable to deleted the card " + err.message));
     }
   }
 
+  function handleForm(value) {
+    setForm(value);
+  }
   return (
     <>
       <Card sx={styles.card}>
@@ -117,16 +105,19 @@ const CardsInList = ({ list, cards, handleArchiveList }) => {
         {/* Cards List */}
         <CardContent sx={styles.cardContent}>
           <List sx={{ padding: 0 }}>
-            {cardsInList.cards.length > 0 ? (
-              cardsInList.cards.map((card) => (
-                <ListItem
-                  key={card.id}
-                  sx={styles.listItem}
-                  onClick={() => handleCardClick(card)}
-                >
-                  {card.name}
-                </ListItem>
-              ))
+            {cardsData.cards?.filter((card) => card.idList === list.id).length >
+            0 ? (
+              cardsData.cards
+                .filter((card) => card.idList === list.id)
+                .map((card) => (
+                  <ListItem
+                    key={card.id}
+                    sx={styles.listItem}
+                    onClick={() => handleCardClick(card)}
+                  >
+                    {card.name}
+                  </ListItem>
+                ))
             ) : (
               <Typography variant="body2" color="gray">
                 No cards in this list
@@ -134,47 +125,20 @@ const CardsInList = ({ list, cards, handleArchiveList }) => {
             )}
 
             {/* Input field for new card */}
-            {status.isAddingCard ? (
-              <ListItem sx={styles.listItem}>
-                <TextField
-                  fullWidth
-                  inputRef={inputFieldForNewCardName}
-                  variant="outlined"
-                  size="small"
-                  autoFocus
-                  placeholder="Enter card name"
-                  sx={styles.textField}
-                />
-                <Button
-                  sx={{ color: "white", marginLeft: 0.5 }}
-                  onClick={handleAddNewCard}
-                >
-                  Add
-                </Button>
-                <Button
-                  sx={{ color: "white", marginLeft: 0.5 }}
-                  onClick={() =>
-                    setStatus({
-                      ...status,
-                      isAddingCard: false,
-                    })
-                  }
-                >
-                  Cancel
-                </Button>
-              </ListItem>
+            {form ? (
+              <OpenForm
+                handleAddNewList={handleAddNewCard}
+                handleForm={handleForm}
+                formName={"Enter the card Name"}
+              />
             ) : (
+             
               <Button
                 startIcon={<AddIcon />}
                 sx={{
                   ...styles.addButton,
                 }}
-                onClick={() =>
-                  setStatus({
-                    ...status,
-                    isAddingCard: true,
-                  })
-                }
+                onClick={() => handleForm(true)}
               >
                 Add a card
               </Button>
@@ -192,18 +156,17 @@ const CardsInList = ({ list, cards, handleArchiveList }) => {
         </Button>
       </Card>
 
-      <Modal
-        open={status.selectedCard}
+      {/* {selectedCard &&  <Modal
+        open={selectedCard}
         onClose={handleClosePopup}
-        // key={status.selectedCard}
       >
         <CheckList
           handleClosePopup={handleClosePopup}
-          key={status.selectedCard}
-          status={status}
+          key={selectedCard?.id}
+          selectedCard={selectedCard}
           handleDeleteCard={handleDeleteCard}
         />
-      </Modal>
+      </Modal>} */}
     </>
   );
 };

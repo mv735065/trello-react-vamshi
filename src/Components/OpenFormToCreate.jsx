@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
 
-const OpenForm = ({ handleAddNewList, handleForm }) => {
+const OpenForm = ({ handleAddNewList, handleForm,formName={} }) => {
   let [text,setText]=useState('');
   console.log('render form');
   
   return (
     <Dialog  open={true}>
-      <DialogTitle>Add a New List</DialogTitle>
+      <DialogTitle>{formName}</DialogTitle>
       <DialogContent>
         <form
           onSubmit={(e)=>{
@@ -32,7 +32,7 @@ const OpenForm = ({ handleAddNewList, handleForm }) => {
           />
         </form>
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around' }}>
         <Button
           type="submit"
           variant="contained"
