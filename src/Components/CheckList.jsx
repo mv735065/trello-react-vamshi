@@ -1,29 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
 import StylesCardInList from "./StylesCardInList";
-
 import { Box, Typography, Button, TextField } from "@mui/material";
-import axios from "axios";
 import CheckListItems from "./CheckListItem";
-import { useReducer } from "react";
 import AddIcon from "@mui/icons-material/Add";
-import CheckListReducer, { initialState } from "../Reducers/CheckListReducer";
-import { fetchCheckLists } from "../Utils/checkListSlice";
+import {
+  fetchCheckLists,
+  deleteCheckList,
+  addNewCheckList,
+} from "../Utils/checkListSlice";
 import { useDispatch, useSelector } from "react-redux";
 
-const apiKey = import.meta.env.VITE_API_KEY;
-const apiToken = import.meta.env.VITE_API_TOKEN;
-
-let API_CREDENTIALS = {
-  key: apiKey,
-  token: apiToken,
-};
-
-const CheckList = ({ handleClosePopup, status }) => {
-  const dispatch=useDispatch();
-  // let [checkLists, dispatch] = useReducer(CheckListReducer, initialState);
-  let {checkLists,isLoading}=useSelector((state)=>state.checkList)
+const CheckList = ({ handleClosePopup, selectedCard }) => {
+  const dispatch = useDispatch();
+  const { checklists, isLoading } = useSelector((state) => state.checkList);
   let inputFieldForCheckListName = useRef();
-  let cardId = status?.selectedCard?.id;
+  let cardId = selectedCard?.id;
   console.log("render checklist");
 
   useEffect(() => {
@@ -31,57 +22,19 @@ const CheckList = ({ handleClosePopup, status }) => {
   }, [cardId]);
 
   async function handleDeleteCheckList(checkListId) {
-    try {
-      let response = await axios.delete(
-        `https://api.trello.com/1/cards/${cardId}/checklists/${checkListId}`,
-        {
-          params: { ...API_CREDENTIALS },
-        }
-      );
-
-      dispatch({
-        type: "deleteCheckList",
-        id: checkListId,
-      });
-    } catch (err) {
-      console.log("unable to deleted the checkLIst ", err.message);
-    }
+    dispatch(deleteCheckList({ cardId, checkListId }));
   }
-
   async function handleAddNewCheckList() {
     let name = inputFieldForCheckListName.current.value;
     if (!name) return;
-    try {
-      let response = await axios.post(
-        `https://api.trello.com/1/checklists`,
-        null,
-        {
-          params: {
-            name: name,
-            idCard: cardId,
-            ...API_CREDENTIALS,
-          },
-        }
-      );
+    dispatch(addNewCheckList({ name, cardId }));
 
-      dispatch({
-        type: "addNewCheckList",
-        data: response.data,
-      });
-
-      inputFieldForCheckListName.current.value = "";
-    } catch (err) {
-      console.log("unable to add the checkLIst ", err.message);
-      dispatch({
-        type: "Error",
-        error: "unable to add the checkLIst " + err.message,
-      });
-    }
+    inputFieldForCheckListName.current.value = "";
   }
 
   let styles = StylesCardInList();
-  console.log(checkLists);
-  
+  console.log(checklists, cardId);
+
   return (
     <>
       <Box sx={styles.modalStyles}>
@@ -94,7 +47,6 @@ const CheckList = ({ handleClosePopup, status }) => {
         </Typography>
 
         <Box display="flex" alignItems="center" gap={1}>
-    
           <Box display="flex" alignItems="center" gap={1}>
             <TextField
               size="small"
@@ -119,14 +71,14 @@ const CheckList = ({ handleClosePopup, status }) => {
             </Button>
           </Box>
         </Box>
-        {isLoading=='loading' ? (
+        {isLoading == "loading" ? (
           <Typography variant="h5" color="white">
             Loading...
           </Typography>
         ) : (
           <Box>
-            {checkLists?.length > 0 ? (
-              checkLists?.map((ele) => (
+            {checklists?.length > 0 ? (
+              checklists?.map((ele) => (
                 <CheckListItems
                   key={ele.id}
                   checkList={ele}

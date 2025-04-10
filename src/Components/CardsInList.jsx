@@ -138,7 +138,7 @@ const CardsInList = ({ list }) => {
           <CheckList
             key={selectedCard.id}
             handleClosePopup={handleClosePopup}
-            status={{ selectedCard }}
+            selectedCard={ selectedCard }
             handleDeleteCard={handleDeleteCard}
           />
         </Modal>
