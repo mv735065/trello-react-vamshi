@@ -4,6 +4,7 @@ import  boardSliceReducer from './boardSlice'
 import boardListSliceReducer from './boardListSlice'
 import cardSliceReducer from './cardSlice'
 import singleBoardSliceReducer from './singleBoardSlice'
+import checkListSliceReducer from './checkListSlice'
 
 const store = configureStore({
     reducer:{
@@ -11,6 +12,8 @@ const store = configureStore({
          list:boardListSliceReducer,
          card:cardSliceReducer,
          singleBoard:singleBoardSliceReducer,
+         checkList:checkListSliceReducer,
+
     }
 })
 

@@ -90,6 +90,12 @@ const boardListSlice = createSlice({
     clearLists: (state) => {
       state.lists = null;
     },
+    getList: (state, action) => {
+      if (state.lists) {
+        const found = state.lists.find((ele) => ele.id === action.payload);
+        state.lists = found ? [found] : [];
+      }
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -129,4 +135,4 @@ const boardListSlice = createSlice({
 });
 
 export default boardListSlice.reducer;
-export const { clearLists } = boardListSlice.actions;
+export const { clearLists,getList } = boardListSlice.actions;

@@ -40,15 +40,13 @@ const BoardList = () => {
   console.log(id);
 
   useEffect(() => {
+    dispatch(clearBoard());
+    dispatch(clearLists());
+    dispatch(clearCard());
+
     dispatch(fetchSingleBoard(id));
     dispatch(fetchlistsOfSingleBoard(id));
     dispatch(fetchAllCardsInBoard(id));
-
-    return () => {
-      dispatch(clearBoard());
-      dispatch(clearLists());
-      dispatch(clearCard());
-    };
   }, [id, dispatch]);
 
   async function handleArchiveList(id) {
@@ -77,9 +75,7 @@ const BoardList = () => {
     <Box
       sx={{
         ...styles.mainBox,
-        bgcolor: board?.prefs.backgroundImage
-          ? "none"
-          :  `#dedce5`,
+        bgcolor: board?.prefs.backgroundImage ? "none" : `#dedce5`,
         backgroundImage: board?.prefs.backgroundImage
           ? `url(${board?.prefs.backgroundImage})`
           : "none",
@@ -105,8 +101,6 @@ const BoardList = () => {
                 <h1>{cardsForEachList?.[ele.id]?.length}</h1>
                 <CardsInList
                   list={ele}
-                  cards={cardsForEachList[ele.id]}
-                  handleArchiveList={handleArchiveList}
                 />
               </Grid>
             );

@@ -21,11 +21,10 @@ import axios from "axios";
 const apiKey = import.meta.env.VITE_API_KEY;
 const apiToken = import.meta.env.VITE_API_TOKEN;
 
-let API_CREDENTIALS={
-  key:apiKey,
-  token:apiToken
-}
-
+let API_CREDENTIALS = {
+  key: apiKey,
+  token: apiToken,
+};
 
 const CheckListItems = ({ checkList, handleDeleteCheckList }) => {
   let id = checkList.id;
@@ -126,12 +125,13 @@ const CheckListItems = ({ checkList, handleDeleteCheckList }) => {
     >
       <Box display="flex" alignItems="center" justifyContent="space-between">
         <Typography variant="h6">{name}</Typography>
-        <IconButton
+        <Button
+          variant="contained"
+          color="error"
           onClick={() => handleDeleteCheckList(id)}
-          sx={{ color: "white" }}
         >
-          <DeleteIcon />
-        </IconButton>
+          Delete
+        </Button>
       </Box>
       <LinearProgress
         variant="determinate"
@@ -156,13 +156,13 @@ const CheckListItems = ({ checkList, handleDeleteCheckList }) => {
               />
             </ListItemIcon>
             <ListItemText primary={item.name} sx={{ color: "white" }} />
-            <Button
-              variant="contained"
-              color="error"
+
+            <IconButton
               onClick={() => handleDeleteCheckListItem(item.id)}
+              sx={{ color: "white" }}
             >
-              Delete
-            </Button>
+              <DeleteIcon />
+            </IconButton>
           </ListItem>
         ))}
       </List>
