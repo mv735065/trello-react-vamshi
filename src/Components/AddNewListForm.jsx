@@ -10,8 +10,10 @@ const AddNewListForm = ({handleAddNewList,setShowForm,listNameRef}) => {
         flexDirection: "column",
         alignItems: "center",
         gap: "10px",
-        paddingTop: "20px",
-        paddingRight: "20px",
+        padding:'20px 20px',
+         marginRight:'30px',
+        backgroundColor:'white',
+        borderRadius:'10px'
       }}
     >
       <TextField
@@ -20,6 +22,7 @@ const AddNewListForm = ({handleAddNewList,setShowForm,listNameRef}) => {
         variant="outlined"
         size="small"
         autoFocus
+        
       />
       <div style={{ display: "flex", gap: "35px" }}>
         <Button type="submit" variant="contained" color="primary">

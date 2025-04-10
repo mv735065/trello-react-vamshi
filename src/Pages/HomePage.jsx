@@ -3,6 +3,7 @@ import { Box, Button, Typography, TextField } from "@mui/material";
 import axios from "axios";
 import Board from "../Components/Board";
 import BoardReducer, { initialState } from "../Reducers/BoardReducer";
+import Spinner from "../Components/Spinner";
 
 const apiKey = import.meta.env.VITE_API_KEY;
 const apiToken = import.meta.env.VITE_API_TOKEN;
@@ -77,15 +78,18 @@ function HomePage() {
     }
   };
   return allBoards.loading ? (
-    <Typography variant="h4">Loading...</Typography>
+     <Spinner />
   ) : (
-    <Box
+      <div style={{backgroundColor:'#f9f7f7',minHeight:'100vh',paddingTop:'40px'}}>
+ <Box
       sx={{
-        width: "100%",
+        width: "80%",
         display: "grid",
         gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
         gap: 2,
-        marginTop: "10px",
+        
+        marginX:'auto',
+       
       }}
     >
       {allBoards.boards.map((board) => (
@@ -95,6 +99,9 @@ function HomePage() {
       <Button
         variant="outlined"
         color="primary"
+        sx={{
+          height:'120px'
+        }}
         onClick={() => {
          
           dispatch({
@@ -142,6 +149,8 @@ function HomePage() {
         </form>
       )}
     </Box>
+      </div>
+   
   );
 }
 

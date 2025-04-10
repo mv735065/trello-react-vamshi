@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import StylesCardInList from "./StylesCardInList";
+import StylesCardInList from "../Styles/StylesCardInList";
 
 import { Box, Typography, Button, TextField } from "@mui/material";
 import axios from "axios";

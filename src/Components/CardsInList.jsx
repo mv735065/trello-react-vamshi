@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import StylesCardInList from "./StylesCardInList";
+import StylesCardInList from "../Styles/StylesCardInList";
 import CheckList from "./CheckList";
 import CardReducer, { initialState } from "../Reducers/CardReducer";
 

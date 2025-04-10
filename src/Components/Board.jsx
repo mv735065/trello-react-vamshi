@@ -12,7 +12,14 @@ const Board = ({ board }) => {
   const navigate = useNavigate();
 
   return (
-    <Card key={board.id} sx={{ height: "200px" }}>
+    <Card
+      key={board.id}
+      sx={{
+        height: "120px",
+        borderRadius: "10px",
+        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+      }}
+    >
       <CardActionArea
         onClick={() => {
           navigate(`/boards/${board.id}`, { state: { board } });
@@ -29,9 +36,7 @@ const Board = ({ board }) => {
             height: "100%",
             display: "flex",
             justifyContent: "space-between",
-            bgcolor: board.prefs.backgroundImage
-              ? "none"
-              : `${board.prefs.backgroundColor}`,
+            bgcolor: board.prefs.backgroundImage ? "none" : "white",
             backgroundImage: board.prefs.backgroundImage
               ? `url(${board.prefs.backgroundImage})`
               : "none",
@@ -39,6 +44,7 @@ const Board = ({ board }) => {
             backgroundPosition: "center", // Center the image
             backgroundRepeat: "no-repeat", // Avoid repeating the image
 
+            borderRadius: 2, // Optional: round corners
           }}
         >
           <Typography variant="h5" component="div">
