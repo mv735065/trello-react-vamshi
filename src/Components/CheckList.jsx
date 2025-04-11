@@ -9,6 +9,7 @@ import {
   addNewCheckList,
 } from "../Utils/checkListSlice";
 import { useDispatch, useSelector } from "react-redux";
+import Spinner from "./LoadingSpiiner";
 
 const CheckList = ({ handleClosePopup, selectedCard }) => {
   const dispatch = useDispatch();
@@ -72,9 +73,7 @@ const CheckList = ({ handleClosePopup, selectedCard }) => {
           </Box>
         </Box>
         {isLoading == "loading" ? (
-          <Typography variant="h5" color="white">
-            Loading...
-          </Typography>
+          <Spinner />
         ) : (
           <Box>
             {checklists?.length > 0 ? (

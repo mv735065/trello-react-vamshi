@@ -1,68 +1,97 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Card,
   CardContent,
   Typography,
   CardActionArea,
+  IconButton,
 } from "@mui/material";
-import { Link, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { Delete as DeleteIcon } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { deleteBoard } from "../Utils/boardSlice";
 
 const Board = () => {
   const navigate = useNavigate();
+  const dispatch=useDispatch();
   const { boards } = useSelector((state) => state.board);
+  const [hoveredBoardId, setHoveredBoardId] = useState(null);
+
+  const handleDeleteClick = (boardId) => {
+    // console.log("Delete board with ID:", boardId);
+    dispatch(deleteBoard(boardId)); // optional redux action
+  };
 
   return (
     <>
-      {boards.map((board) => {
-        return (
-          <Card
-            key={board.id}
-            sx={{
-              height: "120px",
-              borderRadius: "10px",
-              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-            }}
-          >
-            <CardActionArea
-              onClick={() => {
-                navigate(`/boards/${board.id}`, { state: { board } });
+      {boards.map((board) => (
+        <Card
+          key={board.id}
+          onMouseEnter={() => setHoveredBoardId(board.id)}
+          onMouseLeave={() => setHoveredBoardId(null)}
+          sx={{
+            height: "120px",
+            borderRadius: "10px",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+            position: "relative",
+          }}
+        >
+          {/* Delete Icon (now outside CardActionArea) */}
+          {hoveredBoardId === board.id && (
+            <IconButton
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteClick(board.id);
               }}
               sx={{
-                height: "100%",
+                position: "absolute",
+                top: 8,
+                right: 8,
+                zIndex: 2,
+               
                 "&:hover": {
-                  backgroundColor: "action.hover", // Adds hover effect
+                  backgroundColor: "#eee",
                 },
               }}
             >
-              <CardContent
-                sx={{
-                  height: "100%",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  bgcolor: board.prefs.backgroundImage ? "none" : "white",
-                  backgroundImage: board.prefs.backgroundImage
-                    ? `url(${board.prefs.backgroundImage})`
-                    : "none",
-                  backgroundSize: "cover", // Ensure the image covers the entire area
-                  backgroundPosition: "center", // Center the image
-                  backgroundRepeat: "no-repeat", // Avoid repeating the image
+              <DeleteIcon />
+            </IconButton>
+          )}
 
-                  borderRadius: 2, // Optional: round corners
-                }}
-              >
-                <Typography variant="h5" component="div">
-                  {board.name}
-                </Typography>
-                <Typography variant="h5" align="right">
-                  {board.starred && "⭐"}
-                </Typography>
-              </CardContent>
-            </CardActionArea>
-          </Card>
-        );
-      })}
+          <CardActionArea
+            onClick={() => {
+              navigate(`/boards/${board.id}`, { state: { board } });
+            }}
+            sx={{
+              height: "100%",
+              "&:hover": {
+                backgroundColor: "action.hover",
+              },
+            }}
+          >
+            <CardContent
+              sx={{
+                height: "100%",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                bgcolor: board.prefs.backgroundImage ? "none" : "white",
+                backgroundImage: board.prefs.backgroundImage
+                  ? `url(${board.prefs.backgroundImage})`
+                  : "none",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                borderRadius: 2,
+              }}
+            >
+              <Typography variant="h5">{board.name}</Typography>
+            
+            </CardContent>
+          </CardActionArea>
+        </Card>
+      ))}
     </>
   );
 };

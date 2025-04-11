@@ -16,6 +16,7 @@ import {
   addNewList,
 } from "../Utils/boardListSlice";
 import { fetchAllCardsInBoard, clearCard } from "../Utils/cardSlice";
+import Spinner from "../Components/LoadingSpiiner";
 
 const BoardList = () => {
   const { id } = useParams();
@@ -68,7 +69,7 @@ const BoardList = () => {
   let cardsForEachList = getcardsForEachList(allCardsInBoard || []);
 
   return status === "loading" ? (
-    <Typography variant="h5">Loading...</Typography>
+    <Spinner />
   ) : listError || boardError ? (
     <ErrorPage errorMessage={listError || boardError} />
   ) : (

@@ -5,7 +5,7 @@ import Board from "../Components/BoardContainer";
 import BoardReducer, { initialState } from "../Reducers/BoardReducer";
 import { useDispatch, useSelector } from "react-redux";
 import { addBoard, fetchBoards } from "../Utils/boardSlice";
-
+import Spinner from "../Components/LoadingSpiiner";
 function HomePage() {
   const dispatch = useDispatch();
 
@@ -32,7 +32,7 @@ function HomePage() {
     setShowForm(false);
   };
   return status === "loading" ? (
-    <Typography variant="h4">Loading...</Typography>
+    <Spinner />
   ) : (
     <div style={{backgroundColor:'#f9f7f7',minHeight:'100vh',paddingTop:'40px'}}>
  <Box

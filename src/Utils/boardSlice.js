@@ -1,48 +1,44 @@
-import React from "react";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
 const apiKey = import.meta.env.VITE_API_KEY;
 const apiToken = import.meta.env.VITE_API_TOKEN;
 
-let API_CREDENTIALS = {
+const API_CREDENTIALS = {
   key: apiKey,
   token: apiToken,
 };
 
+
 const fetchBoardsFromApi = async () => {
-  const response = await axios.get(
-    "https://api.trello.com/1/members/me/boards",
-    {
-      params: API_CREDENTIALS,
-      headers: { Accept: "application/json" },
-    }
-  );
+  const response = await axios.get("https://api.trello.com/1/members/me/boards", {
+    params: API_CREDENTIALS,
+    headers: { Accept: "application/json" },
+  });
   return response;
 };
 
 const addNewBoardFromApi = async (name) => {
   const response = await axios.post("https://api.trello.com/1/boards/", null, {
-    params: { name: name, ...API_CREDENTIALS },
+    params: { name, ...API_CREDENTIALS },
   });
   return response;
 };
 
-const fetchSingleBoardFromApi = async(id) => {
-    const response = await axios.get(`https://api.trello.com/1/boards/${id}`, {
-      params: {
-        ...API_CREDENTIALS,
-      },
-      headers: {
-        Accept: "application/json",
-      },
-    });
-    return response;
-  }
-  export const fetchSingleBoard=createAsyncThunk("board/fetchSingleBoard", async (id) => {
-    const response = await fetchSingleBoardFromApi(id);
-    return response.data;
+const fetchSingleBoardFromApi = async (boardId) => {
+  const response = await axios.get(`https://api.trello.com/1/boards/${boardId}`, {
+    params: { ...API_CREDENTIALS },
+    headers: { Accept: "application/json" },
   });
+  return response;
+};
+
+const deleteBoardFromApi = async (id) => {
+  const response = await axios.delete(`https://api.trello.com/1/boards/${id}`, {
+    params: { ...API_CREDENTIALS },
+  });
+  return response;
+};
 
 
 export const fetchBoards = createAsyncThunk("board/fetchBoards", async () => {
@@ -51,10 +47,23 @@ export const fetchBoards = createAsyncThunk("board/fetchBoards", async () => {
 });
 
 export const addBoard = createAsyncThunk("board/addBoard", async (name) => {
-    const response = await addNewBoardFromApi(name);
-    return response.data;
-  });
+  const response = await addNewBoardFromApi(name);
+  return response.data;
+});
 
+export const fetchSingleBoard = createAsyncThunk("board/fetchSingleBoard", async (id) => {
+  const response = await fetchSingleBoardFromApi(id);
+  return response.data;
+});
+
+export const deleteBoard = createAsyncThunk("board/deleteBoard", async (boardId, { rejectWithValue }) => {
+  try {
+    await deleteBoardFromApi(boardId);
+    return boardId;
+  } catch (err) {
+    return rejectWithValue(err.message || "Failed to delete board");
+  }
+});
 
 
 const boardSlice = createSlice({
@@ -62,7 +71,7 @@ const boardSlice = createSlice({
   initialState: {
     status: "idle",
     boards: [],
-    currentBoard:null,
+    currentBoard: null,
     error: null,
   },
   reducers: {
@@ -84,12 +93,12 @@ const boardSlice = createSlice({
         state.error = action.error.message || "Failed to fetch boards";
       })
 
-      .addCase(addBoard.fulfilled,(state,action)=>{
+      .addCase(addBoard.fulfilled, (state, action) => {
         state.boards.push(action.payload);
       })
       .addCase(addBoard.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = action.error.message; 
+        state.status = "failed";
+        state.error = action.error.message;
       })
 
       .addCase(fetchSingleBoard.pending, (state) => {
@@ -97,18 +106,23 @@ const boardSlice = createSlice({
       })
       .addCase(fetchSingleBoard.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.currentBoard = action.payload; // Store single board data
-        
+        state.currentBoard = action.payload;
       })
       .addCase(fetchSingleBoard.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message || "Failed to fetch the board";
       })
-     
-     
+
+      .addCase(deleteBoard.fulfilled, (state, action) => {
+        state.boards = state.boards.filter((board) => board.id !== action.payload);
+      })
+      .addCase(deleteBoard.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      });
   },
 });
 
-export default boardSlice.reducer;
 
-export const {clearBoard}=boardSlice.actions;
+export const { clearBoard } = boardSlice.actions;
+export default boardSlice.reducer;
