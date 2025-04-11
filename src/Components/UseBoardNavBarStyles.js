@@ -4,7 +4,7 @@ const useBoardNavBarStyles = () => ({
       alignItems: "center",
       justifyContent: "space-between",
       padding: "16px",
-      backgroundColor: "#f5f5f5",
+      backgroundColor: "white",
       borderBottom: "2px solid #e0e0e0",
       width: "50vw", // Set navbar width to 50% of the viewport
       borderTopRightRadius: "50%", // Right side top rounded with 50% radius

@@ -11,53 +11,59 @@ import { useSelector } from "react-redux";
 
 const Board = () => {
   const navigate = useNavigate();
-  const {boards} =useSelector(state=>state.board)
+  const { boards } = useSelector((state) => state.board);
 
   return (
     <>
-    {boards.map((board)=>{
-      return <Card key={board.id} sx={{ height: "200px" }}>
-      <CardActionArea
-        onClick={() => {
-          navigate(`/boards/${board.id}`, { state: { board } });
-        }}
-        sx={{
-          height: "100%",
-          "&:hover": {
-            backgroundColor: "action.hover", // Adds hover effect
-          },
-        }}
-      >
-        <CardContent
-          sx={{
-            height: "100%",
-            display: "flex",
-            justifyContent: "space-between",
-            bgcolor: board.prefs.backgroundImage
-              ? "none"
-              : `${board.prefs.backgroundColor}`,
-            backgroundImage: board.prefs.backgroundImage
-              ? `url(${board.prefs.backgroundImage})`
-              : "none",
-            backgroundSize: "cover", // Ensure the image covers the entire area
-            backgroundPosition: "center", // Center the image
-            backgroundRepeat: "no-repeat", // Avoid repeating the image
+      {boards.map((board) => {
+        return (
+          <Card
+            key={board.id}
+            sx={{
+              height: "120px",
+              borderRadius: "10px",
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            <CardActionArea
+              onClick={() => {
+                navigate(`/boards/${board.id}`, { state: { board } });
+              }}
+              sx={{
+                height: "100%",
+                "&:hover": {
+                  backgroundColor: "action.hover", // Adds hover effect
+                },
+              }}
+            >
+              <CardContent
+                sx={{
+                  height: "100%",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  bgcolor: board.prefs.backgroundImage ? "none" : "white",
+                  backgroundImage: board.prefs.backgroundImage
+                    ? `url(${board.prefs.backgroundImage})`
+                    : "none",
+                  backgroundSize: "cover", // Ensure the image covers the entire area
+                  backgroundPosition: "center", // Center the image
+                  backgroundRepeat: "no-repeat", // Avoid repeating the image
 
-          }}
-        >
-          <Typography variant="h5" component="div">
-            {board.name}
-          </Typography>
-          <Typography variant="h5" align="right">
-            {board.starred && "⭐"}
-          </Typography>
-        </CardContent>
-      </CardActionArea>
-    </Card>
-    })}
-    
+                  borderRadius: 2, // Optional: round corners
+                }}
+              >
+                <Typography variant="h5" component="div">
+                  {board.name}
+                </Typography>
+                <Typography variant="h5" align="right">
+                  {board.starred && "⭐"}
+                </Typography>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        );
+      })}
     </>
-
   );
 };
 

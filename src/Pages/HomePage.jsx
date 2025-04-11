@@ -6,7 +6,6 @@ import BoardReducer, { initialState } from "../Reducers/BoardReducer";
 import { useDispatch, useSelector } from "react-redux";
 import { addBoard, fetchBoards } from "../Utils/boardSlice";
 
-
 function HomePage() {
   const dispatch = useDispatch();
 
@@ -35,13 +34,16 @@ function HomePage() {
   return status === "loading" ? (
     <Typography variant="h4">Loading...</Typography>
   ) : (
-    <Box
+    <div style={{backgroundColor:'#f9f7f7',minHeight:'100vh',paddingTop:'40px'}}>
+ <Box
       sx={{
-        width: "100%",
+        width: "80%",
         display: "grid",
         gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
         gap: 2,
-        marginTop: "10px",
+        
+        marginX:'auto',
+       
       }}
     >
       <Board />
@@ -86,6 +88,7 @@ function HomePage() {
         </form>
       )}
     </Box>
+    </div>
   );
 }
 

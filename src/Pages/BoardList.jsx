@@ -75,7 +75,7 @@ const BoardList = () => {
     <Box
       sx={{
         ...styles.mainBox,
-        bgcolor: board?.prefs.backgroundImage ? "none" : `#dedce5`,
+        bgcolor: board?.prefs.backgroundImage ? "none" : `#f9f7f7`,
         backgroundImage: board?.prefs.backgroundImage
           ? `url(${board?.prefs.backgroundImage})`
           : "none",
@@ -98,7 +98,6 @@ const BoardList = () => {
                 key={ele.id}
                 sx={{ display: "inline-block", flexShrink: 0 }}
               >
-                <h1>{cardsForEachList?.[ele.id]?.length}</h1>
                 <CardsInList
                   list={ele}
                 />
